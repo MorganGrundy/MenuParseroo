@@ -35,3 +35,22 @@ Using the OCR results and image processing (OpenCV) I calculated the font metric
 From there it was quite easy to identify what each text represented.
 
 At that point I was convinced that the project was very viable, but could not be fully automated with reliable results.
+
+## Plan
+Use C++ with:
+- Qt for GUI
+- OpenCV for image processing
+- Tesseract OCR for OCR
+
+User loads an image file of a menu.
+Some preprocessing needs to be done to the image to prepare it for OCR.
+Ideally want a binary image with black text and white background.
+Can use OpenCV to convert image to grayscale and threshold it.
+May want some other forms of image processing too.
+
+Tesseract has an optimal character height so will likely need to scale image (https://groups.google.com/g/tesseract-ocr/c/Wdh_JJwnw94/m/24JHDYQbBQAJ).
+We have already identified that menus use varying font sizes depending on what the text represents so this could cause an issue. May need to perform OCR on multiple scales and combine the results.
+
+The OCR results will not always be correct so we need a stage where the user reviews the results and corrects any errors.
+
+Once we have the text and it's size we can use the [font rules](#analysis) and Document Layout Analysis to identify what the text represents and the menu structure. From here we sort the text into a data structure which can then be integrated into digital menu systems.
