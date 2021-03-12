@@ -54,3 +54,27 @@ We have already identified that menus use varying font sizes depending on what t
 The OCR results will not always be correct so we need a stage where the user reviews the results and corrects any errors.
 
 Once we have the text and it's size we can use the [font rules](#analysis) and Document Layout Analysis to identify what the text represents and the menu structure. From here we sort the text into a data structure which can then be integrated into digital menu systems.
+
+### OCR Problems + Solutions
+#### 1. False Positives
+Sometimes an area of the image which does not contain text will be recognised by the OCR as text. These false positives would really mess with the next stage (Document Layout Analysis).
+
+Possible solutions:
+- The user can delete the false positives when reviewing the OCR results.
+- During pre-processing we could add some simple paint tools so the user can remove parts of the image.
+
+#### 2. False Negatives
+Text that is not recognised by the OCR at all. The main cause of this seems to be text that is larger than the optimal character height, but it could also be caused by fancy fonts.
+
+Possible solutions:
+- Perform OCR at multiple scales and combine the results.
+- When reviewing the OCR results the user could manually annotate any false negatives.
+
+#### 3. Incorrect Recognition
+Text that is recognised incorrectly by the OCR.
+
+Possible solutions:
+- Tesseract can be given a dictionary (I think it already has one? But it doesn't seem to enforce it only guide).
+- The user can correct any incorrect recognition.
+
+In reality it would be best if all of these solutions are implemented.
