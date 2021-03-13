@@ -74,3 +74,15 @@ SOURCES += main.cpp
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
+
+DISTFILES += \
+	data/tesseract.config \
+	data/eng.user-words \
+	data/eng.user-patterns
+
+# Copy tesseract config, user-words, and user-patterns file to build dir
+copydata.commands = $(COPY_FILE) \"$$shell_path($$PWD\\data)\" \"$$shell_path($$OUT_PWD\\release)\"
+first.depends = $(first) copydata
+export(first.depends)
+export(copydata.commands)
+QMAKE_EXTRA_TARGETS += first copydata

@@ -5,8 +5,11 @@
 #include <iostream>
 
 #include <QCoreApplication>
+#include <QDir>
 
 #include <opencv2/imgproc.hpp>
+
+#include <tesseract/genericvector.h>
 
 OCRGraphicsView::OCRGraphicsView(QWidget *parent)
     : QGraphicsView(parent),
@@ -38,17 +41,33 @@ OCRGraphicsView::OCRGraphicsView(QWidget *parent)
     grayImageItem->hide();
     thresholdImageItem->hide();
 
-    //Initialize tesseract-ocr with English, without specifying tessdata path
-    if (tess_api.Init(NULL, "eng"))
+    //Get path to tesseract config file
+    const QDir appDir(qApp->applicationDirPath());
+    const QString configFile(appDir.absoluteFilePath("tesseract.config"));
+    QByteArray configByteArray = configFile.toLocal8Bit();
+    char *configs[] = {configByteArray.data()};
+
+    //Create vars that contain a relative filepath
+    GenericVector<STRING> vars, varValues;
+    vars.push_back("user_words_file");
+    varValues.push_back(appDir.absoluteFilePath("eng.user-words").toLocal8Bit().constData());
+    vars.push_back("user_patterns_file");
+    varValues.push_back(appDir.absoluteFilePath("eng.user-patterns").toLocal8Bit().constData());
+
+    //Initialize tesseract with English
+    if (tess_api.Init(NULL, "eng", tesseract::OcrEngineMode::OEM_LSTM_ONLY, configs, 1,
+                      &vars, &varValues, true))
     {
         std::cerr << __FILE__":" << __LINE__ << " - Could not initialize tesseract\n";
         QCoreApplication::exit(-1);
     }
-    //Set character whitelist
-    tess_api.SetVariable("tessedit_char_whitelist",
-                         " abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ,.£$&-");
-    tess_api.SetVariable("save_blob_choices", "T");
     tess_api.SetPageSegMode(tesseract::PageSegMode::PSM_AUTO);
+
+    //Saves alternate symbol choices from OCR
+    //tess_api.SetVariable("save_blob_choices", "T");
+
+    //Output tesseract variables to a file
+    tess_api.PrintVariables(fopenWriteStream("E:/Desktop/MenuParseroo/variables.txt", "w"));
 }
 
 OCRGraphicsView::~OCRGraphicsView()
@@ -161,11 +180,15 @@ void OCRGraphicsView::setOCRLevel(const tesseract::PageIteratorLevel t_level)
                 fontMetricItems.push_back(new GraphicsFontMetricItem(x1, y1, x2 - x1,
                                                                      y2 - y1, base_y1 - y1));
                 scene()->addItem(fontMetricItems.back());
-                //Add OCR text to item data
-                fontMetricItems.back()->setData(0, QVariant(tess_ri->GetUTF8Text(t_level)));
+                //Add OCR text to item data, also add ascender and descender of font metrics
+                fontMetricItems.back()->setData(0, QVariant("Ascender = " + QString::number(base_y1 - y1) + "\n"
+                                                            + "Descender = " + QString::number(y2 - base_y1) + "\n"
+                                                            + QString(tess_ri->GetUTF8Text(t_level))));
             }
         } while((tess_ri->Next(t_level)));
     }
+
+    tess_level = t_level;
 }
 
 //Returns font metric item that matches type
