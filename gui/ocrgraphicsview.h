@@ -12,7 +12,9 @@
 
 #include <opencv2/core.hpp>
 
-class OCRGraphicsView : public QGraphicsView
+#include "zoomablegraphicsview.h"
+
+class OCRGraphicsView : public ZoomableGraphicsView
 {
     Q_OBJECT
 public:
@@ -69,15 +71,6 @@ private:
     void clearFontMetricItems();
 
     //-----------------------------------------------------
-    //Modifies zoom by factor
-    void zoom(const double factor);
-
-    //Handles scrolling and zooming
-    //Ctrl-scroll = zoom
-    //Shift-scroll = horizontal scroll
-    //Scroll = vertical scroll
-    void wheelEvent(QWheelEvent *event) override;
-
     //Emits OCR data of clicked text
     void mouseReleaseEvent(QMouseEvent *event) override;
 };

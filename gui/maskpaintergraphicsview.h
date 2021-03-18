@@ -7,11 +7,13 @@
 #include <QGraphicsPixmapItem>
 #include <QMouseEvent>
 
+#include "zoomablegraphicsview.h"
+
 /*
  * Displays image and allows editing of mask
  * Alpha channel used as mask (only with 0 or 255)
 */
-class MaskPainterGraphicsView : public QGraphicsView
+class MaskPainterGraphicsView : public ZoomableGraphicsView
 {
 public:
     explicit MaskPainterGraphicsView(QWidget *parent = nullptr);

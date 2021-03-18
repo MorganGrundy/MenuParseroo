@@ -19,13 +19,15 @@ $$PWD/graphicsfontmetricitem.h \
 	$$PWD/maskpainter.h \
 	$$PWD/maskpaintergraphicsview.h \
 $$PWD/ocrgraphicsview.h \
-$$PWD/mainwindow.h
+$$PWD/mainwindow.h \
+	$$PWD/zoomablegraphicsview.h
 
 SOURCES += \
 $$PWD/graphicsfontmetricitem.cpp \
 	$$PWD/maskpainter.cpp \
 	$$PWD/maskpaintergraphicsview.cpp \
 $$PWD/ocrgraphicsview.cpp \
-$$PWD/mainwindow.cpp
+$$PWD/mainwindow.cpp \
+	$$PWD/zoomablegraphicsview.cpp
 
 INCLUDEPATH += $$PWD

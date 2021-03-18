@@ -5,7 +5,7 @@
 #include <QCoreApplication>
 
 MaskPainterGraphicsView::MaskPainterGraphicsView(QWidget *parent) :
-    QGraphicsView(parent), activeTool{Tool::Brush}, brushSize{100}
+    ZoomableGraphicsView(parent), activeTool{Tool::Brush}, brushSize{100}
 {
     setScene(new QGraphicsScene(this));
 

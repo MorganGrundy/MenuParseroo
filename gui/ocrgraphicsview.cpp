@@ -12,23 +12,13 @@
 #include <tesseract/genericvector.h>
 
 OCRGraphicsView::OCRGraphicsView(QWidget *parent)
-    : QGraphicsView(parent),
+    : ZoomableGraphicsView(parent),
     threshold{127}, otsu{false},
     currentImage{Image::Original},
     tess_ri{}, tess_level{tesseract::PageIteratorLevel::RIL_WORD},
     selectedText{nullptr}
 {
-    setCacheMode(CacheBackground);
-    setViewportUpdateMode(BoundingRectViewportUpdate);
-    setRenderHint(QPainter::Antialiasing);
-    setDragMode(QGraphicsView::ScrollHandDrag);
-    setTransformationAnchor(AnchorUnderMouse);
-
-    //Centres image
-    Qt::Alignment alignment;
-    alignment.setFlag(Qt::AlignmentFlag::AlignHCenter);
-    alignment.setFlag(Qt::AlignmentFlag::AlignVCenter);
-    setAlignment(alignment);
+    setDragMode(ScrollHandDrag);
 
     //Create scene
     setScene(new QGraphicsScene());
@@ -238,43 +228,6 @@ void OCRGraphicsView::clearFontMetricItems()
         delete fontMetricItem;
     }
     fontMetricItems.clear();
-}
-
-//Modifies zoom by factor
-void OCRGraphicsView::zoom(const double factor)
-{
-    if (sceneRect().isEmpty())
-        return;
-
-    scale(factor, factor);
-}
-
-//Handles scrolling and zooming
-//Ctrl-scroll = zoom
-//Shift-scroll = horizontal scroll
-//Scroll = vertical scroll
-void OCRGraphicsView::wheelEvent(QWheelEvent *event)
-{
-    const double zoomScale = 1.1;
-    //Ctrl-scrollwheel modifies image zoom
-    if (event->modifiers() == Qt::ControlModifier)
-    {
-        zoom((event->angleDelta().y() > 0) ? zoomScale : 1.0 / zoomScale);
-    }
-    //Shift-scrollwheel scrolls horizontally
-    else if (event->modifiers() == Qt::ShiftModifier)
-    {
-        //Swap vertical and horizontal delta
-        QPoint pixelDelta(event->pixelDelta().y(), event->pixelDelta().x());
-        QPoint angleDelta(event->angleDelta().y(), event->angleDelta().x());
-        QWheelEvent horizontalScrollEvent(event->position(), event->globalPosition(),
-                                          pixelDelta, angleDelta, event->buttons(),
-                                          Qt::NoModifier, event->phase(), event->inverted());
-        QGraphicsView::wheelEvent(&horizontalScrollEvent);
-    }
-    //Vertical scrolling
-    else if (event->modifiers() == Qt::NoModifier)
-        QGraphicsView::wheelEvent(event);
 }
 
 //Emits OCR data of clicked text
