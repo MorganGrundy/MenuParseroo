@@ -55,7 +55,7 @@ OCRGraphicsView::OCRGraphicsView(QWidget *parent)
     varValues.push_back(appDir.absoluteFilePath("eng.user-patterns").toLocal8Bit().constData());
 
     //Initialize tesseract with English
-    if (tess_api.Init(NULL, "eng", tesseract::OcrEngineMode::OEM_LSTM_ONLY, configs, 1,
+    if (tess_api.Init(NULL, "eng-fast", tesseract::OcrEngineMode::OEM_LSTM_ONLY, configs, 1,
                       &vars, &varValues, true))
     {
         std::cerr << __FILE__":" << __LINE__ << " - Could not initialize tesseract\n";
@@ -162,6 +162,7 @@ void OCRGraphicsView::setOCRLevel(const tesseract::PageIteratorLevel t_level)
     //Iterate level, adding font metric items
     if(tess_ri != nullptr)
     {
+        std::map<int, int> fontSizeFrequency;
         tess_ri->Begin();
         do
         {
@@ -184,8 +185,19 @@ void OCRGraphicsView::setOCRLevel(const tesseract::PageIteratorLevel t_level)
                 fontMetricItems.back()->setData(0, QVariant("Ascender = " + QString::number(base_y1 - y1) + "\n"
                                                             + "Descender = " + QString::number(y2 - base_y1) + "\n"
                                                             + QString(tess_ri->GetUTF8Text(t_level))));
+
+                int fontSize = static_cast<int>(std::round(base_y1 - y1));
+                if (fontSizeFrequency.count(fontSize) == 0)
+                    fontSizeFrequency[fontSize] = 1;
+                else
+                    ++fontSizeFrequency.at(fontSize);
             }
         } while((tess_ri->Next(t_level)));
+
+        QString fontSizeFreqStr = "";
+        for (auto it: fontSizeFrequency)
+            fontSizeFreqStr += QString::number(it.first) + " = " + QString::number(it.second) + "\n";
+        emit textBoundClicked(fontSizeFreqStr);
     }
 
     tess_level = t_level;

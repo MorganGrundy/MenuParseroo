@@ -5,10 +5,13 @@
 #include <QMessageBox>
 #include <QDir>
 #include <QGraphicsPixmapItem>
+
 #include <iostream>
 
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/imgproc.hpp>
+
+#include "imageutility.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow)
@@ -53,6 +56,7 @@ void MainWindow::loadImage()
         {
             //Set image
             ui->graphicsView->setImage(image);
+            ui->widget->setImage(ImageUtility::matToQImage(image));
         }
     }
 }

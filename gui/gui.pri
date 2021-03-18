@@ -11,15 +11,20 @@ DEFINES += "VERSION_MAJOR=$$VERSION_MAJOR" \
 VERSION = $${VERSION_MAJOR}.$${VERSION_MINOR}.$${VERSION_BUILD}
 
 FORMS += \
-$$PWD/mainwindow.ui
+$$PWD/mainwindow.ui \
+	$$PWD/maskpainter.ui
 
 HEADERS += \
 $$PWD/graphicsfontmetricitem.h \
+	$$PWD/maskpainter.h \
+	$$PWD/maskpaintergraphicsview.h \
 $$PWD/ocrgraphicsview.h \
 $$PWD/mainwindow.h
 
 SOURCES += \
 $$PWD/graphicsfontmetricitem.cpp \
+	$$PWD/maskpainter.cpp \
+	$$PWD/maskpaintergraphicsview.cpp \
 $$PWD/ocrgraphicsview.cpp \
 $$PWD/mainwindow.cpp
 
