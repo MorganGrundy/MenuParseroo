@@ -10,8 +10,7 @@
 #include "zoomablegraphicsview.h"
 
 /*
- * Displays image and allows editing of mask
- * Alpha channel used as mask (only with 0 or 255)
+ * Displays image and allows editing of alpha (as binary)
 */
 class MaskPainterGraphicsView : public ZoomableGraphicsView
 {
@@ -22,35 +21,37 @@ public:
     enum class Tool {Brush, Fill};
 
     //Sets the image
-    void setImage(const QImage &t_image, const bool keepMask = false);
+    void setImage(const QImage &t_image);
 
     //Sets the active tool
     void setTool(const Tool t_tool);
     //Returns brush size
     int getBrushSize();
 
-    //Clears the current mask
-    void clearMask();
-    //Returns mask
-    QImage getMask();
+    //Returns image
+    QImage getImage();
 
 public slots:
     //Sets brush size
     void setBrushSize(const int t_size);
 
+protected:
+    //Mouse events used for painting
+    void mousePressEvent(QMouseEvent *event) override;
+    void mouseMoveEvent(QMouseEvent *event) override;
+
 private:
-    QImage image, mask;
+    QImage image;
     QGraphicsPixmapItem *imageItem;
 
     Tool activeTool;
     int brushSize;
 
-    //Mouse events used for painting mask
-    void mousePressEvent(QMouseEvent *event) override;
-    void mouseMoveEvent(QMouseEvent *event) override;
+    //Draws ellipse on image alpha
+    void drawCircle(const QPoint &t_center, const bool active);
 
-    //Updates displayed pixmap with new mask
-    void updatePixmap();
+    //Updates image item with new image
+    void updateImage();
 };
 
 #endif // MASKPAINTERGRAPHICSVIEW_H

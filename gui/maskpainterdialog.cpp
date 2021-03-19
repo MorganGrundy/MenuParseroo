@@ -1,13 +1,15 @@
-#include "maskpainter.h"
-#include "ui_maskpainter.h"
+#include "maskpainterdialog.h"
+#include "ui_maskpainterdialog.h"
 
 #include <iostream>
 
-MaskPainter::MaskPainter(QWidget *parent) :
-    QWidget(parent),
-    ui(new Ui::MaskPainter)
+MaskPainterDialog::MaskPainterDialog(const QImage &t_image, QWidget *parent) :
+    QDialog(parent),
+    ui(new Ui::MaskPainterDialog)
 {
     ui->setupUi(this);
+
+    ui->graphicsView->setImage(t_image);
 
     //Get initial brush size
     ui->spinBrushSize->setValue(ui->graphicsView->getBrushSize());
@@ -28,21 +30,21 @@ MaskPainter::MaskPainter(QWidget *parent) :
                     QCoreApplication::exit(-1);
                 }
             });
+
+    //Connect accept to emit mask image
+    connect(ui->buttonBox, &QDialogButtonBox::accepted, this, [=](){
+        emit dialogAccepted(ui->graphicsView->getImage());
+    });
 }
 
-MaskPainter::~MaskPainter()
+MaskPainterDialog::~MaskPainterDialog()
 {
     delete ui;
 }
 
-//Sets the image
-void MaskPainter::setImage(const QImage &t_image, const bool keepMask)
+//Resizes graphics scene to fit in view
+void MaskPainterDialog::showEvent(QShowEvent *event)
 {
-    ui->graphicsView->setImage(t_image, keepMask);
-}
-
-//Returns mask
-QImage MaskPainter::getMask()
-{
-    return ui->graphicsView->getMask();
+    QDialog::showEvent(event);
+    ui->graphicsView->fitInView(ui->graphicsView->sceneRect(), Qt::KeepAspectRatio);
 }

@@ -12,6 +12,7 @@
 #include <opencv2/imgproc.hpp>
 
 #include "imageutility.h"
+#include "maskpainterdialog.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow)
@@ -44,7 +45,7 @@ void MainWindow::loadImage()
 
     if (!file.isEmpty())
     {
-        cv::Mat image = cv::imread(file.toStdString());
+        cv::Mat image = cv::imread(file.toStdString(), cv::IMREAD_COLOR);
         if (image.empty())
         {
             //Failed to load image
@@ -56,9 +57,21 @@ void MainWindow::loadImage()
         {
             //Set image
             ui->graphicsView->setImage(image);
-            ui->widget->setImage(ImageUtility::matToQImage(image));
+            originalImage = ImageUtility::matToQImage(image);
         }
     }
+}
+
+//Opens mask painter
+void MainWindow::maskPainter()
+{
+    MaskPainterDialog maskPainterDialog(originalImage, this);
+    connect(&maskPainterDialog, &MaskPainterDialog::dialogAccepted,
+            this, [=](QImage image){
+                originalImage = image;
+                ui->graphicsView->setImage(ImageUtility::qImageToMat(originalImage));
+            });
+    maskPainterDialog.exec();
 }
 
 //Sets threshold for thresholding image

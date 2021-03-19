@@ -12,11 +12,11 @@ VERSION = $${VERSION_MAJOR}.$${VERSION_MINOR}.$${VERSION_BUILD}
 
 FORMS += \
 $$PWD/mainwindow.ui \
-	$$PWD/maskpainter.ui
+	$$PWD/maskpainterdialog.ui
 
 HEADERS += \
 $$PWD/graphicsfontmetricitem.h \
-	$$PWD/maskpainter.h \
+	$$PWD/maskpainterdialog.h \
 	$$PWD/maskpaintergraphicsview.h \
 $$PWD/ocrgraphicsview.h \
 $$PWD/mainwindow.h \
@@ -24,7 +24,7 @@ $$PWD/mainwindow.h \
 
 SOURCES += \
 $$PWD/graphicsfontmetricitem.cpp \
-	$$PWD/maskpainter.cpp \
+	$$PWD/maskpainterdialog.cpp \
 	$$PWD/maskpaintergraphicsview.cpp \
 $$PWD/ocrgraphicsview.cpp \
 $$PWD/mainwindow.cpp \

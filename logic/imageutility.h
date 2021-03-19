@@ -11,6 +11,9 @@ QPixmap matToQPixmap(const cv::Mat &t_mat);
 
 //Converts an OpenCV Mat to a QImage
 QImage matToQImage(const cv::Mat &t_mat);
+
+//Converts a QImage to an OpenCV Mat
+cv::Mat qImageToMat(const QImage &t_image);
 };
 
 #endif // IMAGEUTILITY_H

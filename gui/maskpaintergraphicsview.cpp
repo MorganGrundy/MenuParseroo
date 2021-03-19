@@ -16,27 +16,20 @@ MaskPainterGraphicsView::MaskPainterGraphicsView(QWidget *parent) :
 MaskPainterGraphicsView::~MaskPainterGraphicsView() {}
 
 //Sets the image
-//Keep mask will keep the previous mask (as long as the size is the same)
-void MaskPainterGraphicsView::setImage(const QImage &t_image, const bool keepMask)
+void MaskPainterGraphicsView::setImage(const QImage &t_image)
 {
-    image = t_image;
-
-    if (keepMask && mask.size() == image.size())
-        updatePixmap();
+    //Add alpha channel if image has none
+    if (t_image.hasAlphaChannel())
+        image = t_image;
     else
-    {
-        //Create new mask of image size
-        mask = QImage(image.size(), QImage::Format::Format_Grayscale8);
-        clearMask();
-    }
+        image = t_image.convertToFormat(QImage::Format_RGBA8888);
 
     //Set brush size to 5% of image size
     brushSize = std::round(0.05 * std::min(image.width(), image.height()));
 
-    //Display pixmap
-    updatePixmap();
-    setSceneRect(imageItem->pixmap().rect());
-    fitInView(sceneRect(), Qt::AspectRatioMode::KeepAspectRatio);
+    //Display image
+    updateImage();
+    setSceneRect(image.rect());
 }
 
 //Sets the active tool
@@ -57,47 +50,36 @@ void MaskPainterGraphicsView::setBrushSize(const int t_size)
     brushSize = t_size;
 }
 
-//Clears the current mask
-void MaskPainterGraphicsView::clearMask()
+//Returns image
+QImage MaskPainterGraphicsView::getImage()
 {
-    //Set all mask pixels to active
-    QPainter painter(&mask);
-    painter.setBrush(Qt::GlobalColor::white);
-    painter.drawRect(mask.rect());
+    return image;
 }
 
-//Returns mask
-QImage MaskPainterGraphicsView::getMask()
-{
-    return mask;
-}
-
-//Mouse events used for painting mask
+//Mouse events used for painting
 void MaskPainterGraphicsView::mousePressEvent(QMouseEvent *event)
 {
     const QPoint clickPos = mapToScene(event->pos()).toPoint();
 
     //Maps left click to inactive, right click to active
-    QPainter painter(&mask);
-    painter.setPen(Qt::NoPen);
+    bool active;
     if (event->button() == Qt::LeftButton)
-        painter.setBrush(Qt::GlobalColor::black);
+        active = false;
     else if (event->button() == Qt::RightButton)
-        painter.setBrush(Qt::GlobalColor::white);
+        active = true;
     else
         return;
 
     if (activeTool == Tool::Brush)
     {
-        //Draw circle on mask
-        painter.drawEllipse(clickPos, brushSize, brushSize);
+        drawCircle(clickPos, active);
     }
     else if (activeTool == Tool::Fill)
     {
         //Fill connected component
     }
 
-    updatePixmap();
+    updateImage();
 }
 
 //Mouse events used for painting mask
@@ -106,27 +88,77 @@ void MaskPainterGraphicsView::mouseMoveEvent(QMouseEvent *event)
     const QPoint clickPos = mapToScene(event->pos()).toPoint();
 
     //Maps left click to inactive, right click to active
-    QPainter painter(&mask);
-    painter.setPen(Qt::NoPen);
+    bool active;
     if (event->buttons() == Qt::LeftButton)
-        painter.setBrush(Qt::GlobalColor::black);
+        active = false;
     else if (event->buttons() == Qt::RightButton)
-        painter.setBrush(Qt::GlobalColor::white);
+        active = true;
     else
         return;
 
     if (activeTool == Tool::Brush)
     {
-        //Draw circle on mask
-        painter.drawEllipse(clickPos, brushSize, brushSize);
-        updatePixmap();
+        drawCircle(clickPos, active);
+    }
+
+    updateImage();
+}
+
+//Draws ellipse on image alpha
+void MaskPainterGraphicsView::drawCircle(const QPoint &t_center, const bool active)
+{
+    const int diameter = brushSize * 2 + 1;
+    const int hh = diameter * diameter;
+    const int ww = diameter * diameter;
+    const int hhww = hh * ww;
+    int x0 = diameter;
+    int dx = 0;
+
+    //Draw the horizontal diameter
+    for (int x = -diameter; x <= diameter; ++x)
+    {
+        if (t_center.x() + x > 0 && t_center.x() + x < image.width())
+        {
+            QColor colour = image.pixelColor(t_center.x() + x, t_center.y());
+            colour.setAlpha(active ? 255 : 0);
+            image.setPixelColor(t_center.x() + x, t_center.y(), colour);
+        }
+    }
+
+    //Draw both halves at the same time, away from the diameter
+    for (int y = 1; y <= diameter; ++y)
+    {
+        int x1 = x0 - (dx - 1);  //Try slopes of dx - 1 or more
+        for ( ; x1 > 0; x1--)
+            if (x1*x1*hh + y*y*ww <= hhww)
+                break;
+        dx = x0 - x1;  //Current approximation of the slope
+        x0 = x1;
+
+        //Draw horizontal line in each half
+        for (int x = -x0; x <= x0; ++x)
+        {
+            if (t_center.x() + x >= 0 && t_center.x() + x < image.width() &&
+                t_center.y() - y >= 0 && t_center.y() - y < image.height())
+            {
+                QColor colour = image.pixelColor(t_center.x() + x, t_center.y() - y);
+                colour.setAlpha(active ? 255 : 0);
+                image.setPixelColor(t_center.x() + x, t_center.y() - y, colour);
+            }
+
+            if (t_center.x() + x >= 0 && t_center.x() + x < image.width() &&
+                t_center.y() + y >= 0 && t_center.y() + y < image.height())
+            {
+                QColor colour = image.pixelColor(t_center.x() + x, t_center.y() + y);
+                colour.setAlpha(active ? 255 : 0);
+                image.setPixelColor(t_center.x() + x, t_center.y() + y, colour);
+            }
+        }
     }
 }
 
-//Updates displayed pixmap with new mask
-void MaskPainterGraphicsView::updatePixmap()
+//Updates image item with new image
+void MaskPainterGraphicsView::updateImage()
 {
-    QImage newImage(image);
-    newImage.setAlphaChannel(mask);
-    imageItem->setPixmap(QPixmap::fromImage(newImage));
+    imageItem->setPixmap(QPixmap::fromImage(image));
 }

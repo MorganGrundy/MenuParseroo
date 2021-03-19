@@ -53,6 +53,13 @@
        </widget>
       </item>
       <item>
+       <widget class="QPushButton" name="pushPaintMask">
+        <property name="text">
+         <string>Paint Mask</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QLabel" name="label">
         <property name="text">
          <string>Threshold:</string>
@@ -89,6 +96,16 @@
        </widget>
       </item>
      </layout>
+    </item>
+    <item row="3" column="0">
+     <widget class="OCRGraphicsView" name="graphicsView">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+     </widget>
     </item>
     <item row="2" column="0">
      <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -185,16 +202,6 @@
       </item>
      </layout>
     </item>
-    <item row="3" column="0">
-     <widget class="OCRGraphicsView" name="graphicsView">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-     </widget>
-    </item>
     <item row="1" column="1">
      <layout class="QHBoxLayout" name="horizontalLayout_3">
       <item>
@@ -243,16 +250,6 @@
       </item>
      </layout>
     </item>
-    <item row="4" column="1">
-     <widget class="MaskPainter" name="widget" native="true">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-     </widget>
-    </item>
    </layout>
   </widget>
   <widget class="QMenuBar" name="menubar">
@@ -272,12 +269,6 @@
    <class>OCRGraphicsView</class>
    <extends>QGraphicsView</extends>
    <header>ocrgraphicsview.h</header>
-  </customwidget>
-  <customwidget>
-   <class>MaskPainter</class>
-   <extends>QWidget</extends>
-   <header>maskpainter.h</header>
-   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources/>
@@ -362,6 +353,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>pushPaintMask</sender>
+   <signal>released()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>maskPainter()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>149</x>
+     <y>39</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>640</x>
+     <y>339</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>loadImage()</slot>
@@ -370,6 +377,7 @@
   <slot>textChanged()</slot>
   <slot>OCRLevelChanged(QString)</slot>
   <slot>imageChoiceChanged(QAbstractButton*)</slot>
+  <slot>maskPainter()</slot>
  </slots>
  <buttongroups>
   <buttongroup name="buttonGroupImage"/>
