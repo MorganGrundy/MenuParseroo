@@ -1,6 +1,7 @@
 #include "ocrgraphicsview.h"
 
 #include "imageutility.h"
+#include "maskpainterdialog.h"
 
 #include <iostream>
 
@@ -68,24 +69,11 @@ OCRGraphicsView::~OCRGraphicsView()
 //Sets image of graphics view at given index
 void OCRGraphicsView::setImage(const cv::Mat &t_image)
 {
-    //Convert cv::Mat to QPixmap
-    const QPixmap pixmap = ImageUtility::matToQPixmap(t_image);
-
-    //Set new image
+    //Original image
     originalImage = t_image;
-    originalImageItem->setPixmap(pixmap);
+    imageAndMask = ImageUtility::matToQImage(t_image);
 
-    //Grayscale image
-    cv::cvtColor(originalImage, grayImage, cv::COLOR_BGR2GRAY);
-    //Set new gray image
-    grayImageItem->setPixmap(ImageUtility::matToQPixmap(grayImage));
-
-    //Threshold image
-    setThreshold(threshold, otsu, true);
-
-    //Update scene
-    setSceneRect(pixmap.rect());
-    fitInView(sceneRect(), Qt::KeepAspectRatio);
+    updateImages();
 }
 
 //Sets threshold for thresholding image
@@ -127,20 +115,6 @@ void OCRGraphicsView::showImage(const Image t_type)
         getFontMetricItem(currentImage)->hide();
         getFontMetricItem(t_type)->show();
         currentImage = t_type;
-    }
-}
-
-//OCRs threshold image
-void OCRGraphicsView::OCR()
-{
-    if (!thresholdImage.empty())
-    {
-        tess_api.SetImage(thresholdImage.data, thresholdImage.cols, thresholdImage.rows,
-                          thresholdImage.channels(), static_cast<int>(thresholdImage.step));
-        tess_api.Recognize(NULL);
-        tess_ri = std::shared_ptr<tesseract::ResultIterator>(tess_api.GetIterator());
-
-        setOCRLevel(tess_level);
     }
 }
 
@@ -193,8 +167,103 @@ void OCRGraphicsView::setOCRLevel(const tesseract::PageIteratorLevel t_level)
     tess_level = t_level;
 }
 
+//Allows user to edit the mask of the current image
+void OCRGraphicsView::editMask()
+{
+    if (!imageAndMask.isNull())
+    {
+        if (currentImage == Image::Original)
+        {
+            MaskPainterDialog maskPainterDialog(imageAndMask, this);
+            //Replace the mask
+            if (maskPainterDialog.exec() == QDialog::Accepted)
+            {
+                imageAndMask = maskPainterDialog.getImage();
+
+                originalImage = ImageUtility::qImageToMat(imageAndMask);
+                updateImages();
+            }
+        }
+        else
+        {
+            //Get current image and add current mask to it
+            QImage currentImageAndMask = getFontMetricItem(currentImage)->pixmap().toImage();
+            currentImageAndMask.setAlphaChannel(
+                imageAndMask.convertToFormat(QImage::Format_Alpha8));
+
+            MaskPainterDialog maskPainterDialog(currentImageAndMask, this);
+            if (maskPainterDialog.exec() == QDialog::Accepted)
+            {
+                //Combine current mask with new
+                ImageUtility::mergeAlpha(imageAndMask, maskPainterDialog.getImage());
+
+                originalImage = ImageUtility::qImageToMat(imageAndMask);
+                updateImages();
+            }
+        }
+    }
+}
+
+//OCRs threshold image
+void OCRGraphicsView::OCR()
+{
+    if (!thresholdImage.empty())
+    {
+        tess_api.SetImage(thresholdImage.data, thresholdImage.cols, thresholdImage.rows,
+                          thresholdImage.channels(), static_cast<int>(thresholdImage.step));
+        tess_api.Recognize(NULL);
+        tess_ri = std::shared_ptr<tesseract::ResultIterator>(tess_api.GetIterator());
+
+        setOCRLevel(tess_level);
+    }
+}
+
+//Emits OCR data of clicked text
+void OCRGraphicsView::mouseReleaseEvent(QMouseEvent *event)
+{
+    if (event->button() == Qt::MouseButton::LeftButton)
+    {
+        //Font metric items have text stored in data so can filter by that
+        auto clickedItem = itemAt(event->pos());
+        if (clickedItem != nullptr && !clickedItem->data(0).isNull())
+        {
+            //Deselect previous item
+            if (selectedText != nullptr)
+                selectedText->setGraphicsEffect(nullptr);
+
+            //Change color of item to red
+            selectedText = clickedItem;
+            QGraphicsColorizeEffect *effect = new QGraphicsColorizeEffect();
+            effect->setColor(QColor(255, 0, 0));
+            effect->setStrength(1);
+            selectedText->setGraphicsEffect(effect);
+
+            emit textBoundClicked(clickedItem->data(0).toString());
+        }
+    }
+    QGraphicsView::mouseReleaseEvent(event);
+}
+
+//Creates and displays images
+void OCRGraphicsView::updateImages()
+{
+    originalImageItem->setPixmap(QPixmap::fromImage(imageAndMask));
+
+    //Grayscale image
+    cv::cvtColor(originalImage, grayImage, cv::COLOR_BGR2GRAY);
+    grayImageItem->setPixmap(ImageUtility::matToQPixmap(grayImage));
+
+    //Threshold image
+    setThreshold(threshold, otsu, true);
+
+    //Update scene
+    setSceneRect(imageAndMask.rect());
+    fitInView(sceneRect(), Qt::KeepAspectRatio);
+}
+
+
 //Returns font metric item that matches type
-QGraphicsPixmapItem *OCRGraphicsView::getFontMetricItem(const OCRGraphicsView::Image t_type)
+QGraphicsPixmapItem *OCRGraphicsView::getFontMetricItem(const Image t_type)
 {
     switch(t_type)
     {
@@ -228,30 +297,4 @@ void OCRGraphicsView::clearFontMetricItems()
         delete fontMetricItem;
     }
     fontMetricItems.clear();
-}
-
-//Emits OCR data of clicked text
-void OCRGraphicsView::mouseReleaseEvent(QMouseEvent *event)
-{
-    if (event->button() == Qt::MouseButton::LeftButton)
-    {
-        //Font metric items have text stored in data so can filter by that
-        auto clickedItem = itemAt(event->pos());
-        if (clickedItem != nullptr && !clickedItem->data(0).isNull())
-        {
-            //Deselect previous item
-            if (selectedText != nullptr)
-                selectedText->setGraphicsEffect(nullptr);
-
-            //Change color of item to red
-            selectedText = clickedItem;
-            QGraphicsColorizeEffect *effect = new QGraphicsColorizeEffect();
-            effect->setColor(QColor(255, 0, 0));
-            effect->setStrength(1);
-            selectedText->setGraphicsEffect(effect);
-
-            emit textBoundClicked(clickedItem->data(0).toString());
-        }
-    }
-    QGraphicsView::mouseReleaseEvent(event);
 }

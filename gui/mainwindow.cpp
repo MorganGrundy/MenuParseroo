@@ -28,8 +28,10 @@ MainWindow::MainWindow(QWidget *parent)
             this, [=](){setThreshold(ui->thresholdSlider->value());});
 
     //OCR
-    connect(ui->pushOCR, &QAbstractButton::released,
-            ui->graphicsView, &OCRGraphicsView::OCR);
+    connect(ui->pushOCR, SIGNAL(released()), ui->graphicsView, SLOT(OCR()));
+
+    //Mask painter
+    connect(ui->pushPaintMask, SIGNAL(released()), ui->graphicsView, SLOT(editMask()));
 }
 
 MainWindow::~MainWindow()
@@ -57,21 +59,8 @@ void MainWindow::loadImage()
         {
             //Set image
             ui->graphicsView->setImage(image);
-            originalImage = ImageUtility::matToQImage(image);
         }
     }
-}
-
-//Opens mask painter
-void MainWindow::maskPainter()
-{
-    MaskPainterDialog maskPainterDialog(originalImage, this);
-    connect(&maskPainterDialog, &MaskPainterDialog::dialogAccepted,
-            this, [=](QImage image){
-                originalImage = image;
-                ui->graphicsView->setImage(ImageUtility::qImageToMat(originalImage));
-            });
-    maskPainterDialog.exec();
 }
 
 //Sets threshold for thresholding image

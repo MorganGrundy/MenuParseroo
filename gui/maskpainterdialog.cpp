@@ -30,16 +30,17 @@ MaskPainterDialog::MaskPainterDialog(const QImage &t_image, QWidget *parent) :
                     QCoreApplication::exit(-1);
                 }
             });
-
-    //Connect accept to emit mask image
-    connect(ui->buttonBox, &QDialogButtonBox::accepted, this, [=](){
-        emit dialogAccepted(ui->graphicsView->getImage());
-    });
 }
 
 MaskPainterDialog::~MaskPainterDialog()
 {
     delete ui;
+}
+
+//Returns resulting image with mask
+QImage MaskPainterDialog::getImage()
+{
+    return ui->graphicsView->getImage();
 }
 
 //Resizes graphics scene to fit in view

@@ -31,18 +31,28 @@ public:
     //Selects which image to display
     void showImage(const Image t_type);
 
-    //OCRs threshold image
-    void OCR();
     //Sets the level of OCR results that are shown
     void setOCRLevel(const tesseract::PageIteratorLevel t_level);
+
+public slots:
+    //Allows user to edit the mask of the current image
+    void editMask();
+
+    //OCRs threshold image
+    void OCR();
 
 signals:
     //Shares the text that was clicked
     void textBoundClicked(const QString t_text);
 
+protected:
+    //Emits OCR data of clicked text
+    void mouseReleaseEvent(QMouseEvent *event) override;
+
 private:
     //Stores images
     cv::Mat originalImage, grayImage, thresholdImage;
+    QImage imageAndMask;
     QGraphicsPixmapItem *originalImageItem, *grayImageItem, *thresholdImageItem;
 
     //Threshold
@@ -62,6 +72,9 @@ private:
     QGraphicsItem *selectedText;
 
     //-----------------------------------------------------
+    //Creates and displays images
+    void updateImages();
+
     //Returns font metric item that matches type
     QGraphicsPixmapItem *getFontMetricItem(const Image t_type);
 
@@ -69,10 +82,6 @@ private:
     void clearTesseract();
     //Clears font metric items
     void clearFontMetricItems();
-
-    //-----------------------------------------------------
-    //Emits OCR data of clicked text
-    void mouseReleaseEvent(QMouseEvent *event) override;
 };
 
 #endif // OCRGRAPHICSVIEW_H

@@ -115,13 +115,16 @@ void MaskPainterGraphicsView::drawCircle(const QPoint &t_center, const bool acti
     int dx = 0;
 
     //Draw the horizontal diameter
-    for (int x = -diameter; x <= diameter; ++x)
+    if (t_center.y() >= 0 && t_center.y() < image.height())
     {
-        if (t_center.x() + x > 0 && t_center.x() + x < image.width())
+        for (int x = -diameter; x <= diameter; ++x)
         {
-            QColor colour = image.pixelColor(t_center.x() + x, t_center.y());
-            colour.setAlpha(active ? 255 : 0);
-            image.setPixelColor(t_center.x() + x, t_center.y(), colour);
+            if (t_center.x() + x >= 0 && t_center.x() + x < image.width())
+            {
+                QColor colour = image.pixelColor(t_center.x() + x, t_center.y());
+                colour.setAlpha(active ? 255 : 0);
+                image.setPixelColor(t_center.x() + x, t_center.y(), colour);
+            }
         }
     }
 

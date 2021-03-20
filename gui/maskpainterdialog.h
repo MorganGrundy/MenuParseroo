@@ -17,9 +17,8 @@ public:
     explicit MaskPainterDialog(const QImage &t_image, QWidget *parent = nullptr);
     ~MaskPainterDialog();
 
-signals:
-    //Returns
-    void dialogAccepted(QImage image);
+    //Returns resulting image with mask
+    QImage getImage();
 
 protected:
     //Resizes graphics scene to fit in view

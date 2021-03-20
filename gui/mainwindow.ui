@@ -353,22 +353,6 @@
     </hint>
    </hints>
   </connection>
-  <connection>
-   <sender>pushPaintMask</sender>
-   <signal>released()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>maskPainter()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>149</x>
-     <y>39</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>640</x>
-     <y>339</y>
-    </hint>
-   </hints>
-  </connection>
  </connections>
  <slots>
   <slot>loadImage()</slot>

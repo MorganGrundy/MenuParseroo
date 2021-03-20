@@ -26,9 +26,6 @@ public slots:
     //Prompts user for image
     void loadImage();
 
-    //Opens mask painter
-    void maskPainter();
-
     //Sets threshold for thresholding image
     void setThreshold(const int threshold);
 
@@ -43,7 +40,5 @@ public slots:
 
 private:
     Ui::MainWindow *ui;
-
-    QImage originalImage;
 };
 #endif // MAINWINDOW_H

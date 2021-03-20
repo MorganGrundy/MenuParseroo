@@ -40,7 +40,7 @@ QImage ImageUtility::matToQImage(const cv::Mat &t_mat)
     else if (t_mat.channels() == 3)
     {
         return QImage(t_mat.data, t_mat.cols, t_mat.rows, static_cast<int>(t_mat.step),
-                   QImage::Format_BGR888);
+                   QImage::Format_RGB888).rgbSwapped();
     }
 
     std::cerr << __FILE__":" << __LINE__ << " - Image type not supported\n";
@@ -82,4 +82,39 @@ cv::Mat ImageUtility::qImageToMat(const QImage &t_image)
     std::cerr << __FILE__":" << __LINE__ << " - Image type not supported\n";
     QCoreApplication::exit(-1);
     return cv::Mat();
+}
+
+//Merges alpha channel into image
+//Treats alpha channel as binary
+bool ImageUtility::mergeAlpha(QImage &t_image, const QImage &t_alpha)
+{
+    //Image and alpha must be same size
+    //Alpha must have an alpha channel
+    if (t_image.size() != t_alpha.size() || !t_alpha.hasAlphaChannel())
+        return false;
+
+    //If image has no alpha can just set
+    if (!t_image.hasAlphaChannel())
+    {
+        t_image.setAlphaChannel(t_alpha);
+        return true;
+    }
+
+    //Merge alpha channels
+    for (int x = 0; x < t_image.width(); ++x)
+    {
+        for (int y = 0; y < t_image.height(); ++y)
+        {
+            QColor imageColour = t_image.pixelColor(x, y);
+            const QColor alphaColour = t_alpha.pixelColor(x, y);
+
+            if (imageColour.alpha() != 0 && alphaColour.alpha() == 0)
+            {
+                imageColour.setAlpha(0);
+                t_image.setPixelColor(x, y, imageColour);
+            }
+        }
+    }
+
+    return true;
 }
