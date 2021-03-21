@@ -5,6 +5,8 @@
 #include <QPixmap>
 #include <QBitmap>
 #include <QGraphicsPixmapItem>
+#include <QGraphicsEllipseItem>
+#include <QGraphicsRectItem>
 #include <QMouseEvent>
 
 #include "zoomablegraphicsview.h"
@@ -25,15 +27,15 @@ public:
 
     //Sets the active tool
     void setTool(const Tool t_tool);
-    //Returns brush size
-    int getBrushSize();
+    //Returns brush radius
+    int getBrushRadius();
 
     //Returns image
     QImage getImage();
 
 public slots:
-    //Sets brush size
-    void setBrushSize(const int t_size);
+    //Sets brush radius
+    void setBrushRadius(const int t_radius);
 
 protected:
     //Mouse events used for painting
@@ -46,9 +48,11 @@ private:
     QGraphicsPixmapItem *imageItem;
 
     Tool activeTool;
-    int brushSize;
+    int brushRadius;
+    QGraphicsEllipseItem *brushPreview;
 
     QPoint clickStart;
+    QGraphicsRectItem *rectPreview;
 
     //Draws ellipse on image alpha
     void drawCircle(const QPoint &t_center, const bool active);

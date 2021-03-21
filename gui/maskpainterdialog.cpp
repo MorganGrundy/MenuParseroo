@@ -12,10 +12,12 @@ MaskPainterDialog::MaskPainterDialog(const QImage &t_image, QWidget *parent) :
     ui->graphicsView->setImage(t_image);
 
     //Get initial brush size
-    ui->spinBrushSize->setValue(ui->graphicsView->getBrushSize());
+    ui->spinBrushSize->setValue(ui->graphicsView->getBrushRadius() * 2 + 1);
     //Connect brush size spin box
     connect(ui->spinBrushSize, qOverload<int>(&QSpinBox::valueChanged),
-            ui->graphicsView, &MaskPainterGraphicsView::setBrushSize);
+            this, [=](const int size){
+                ui->graphicsView->setBrushRadius((size - 1) / 2);
+            });
 
     //Connect painter tool buttons
     connect(ui->buttonGroup, qOverload<QAbstractButton *>(&QButtonGroup::buttonReleased),
