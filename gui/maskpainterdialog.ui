@@ -65,6 +65,19 @@
       </spacer>
      </item>
      <item>
+      <widget class="QPushButton" name="pushRect">
+       <property name="text">
+        <string>Rect</string>
+       </property>
+       <property name="checkable">
+        <bool>true</bool>
+       </property>
+       <attribute name="buttonGroup">
+        <string notr="true">buttonGroup</string>
+       </attribute>
+      </widget>
+     </item>
+     <item>
       <widget class="QPushButton" name="pushFill">
        <property name="text">
         <string>Fill</string>

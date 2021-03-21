@@ -59,8 +59,6 @@ QImage MaskPainterGraphicsView::getImage()
 //Mouse events used for painting
 void MaskPainterGraphicsView::mousePressEvent(QMouseEvent *event)
 {
-    const QPoint clickPos = mapToScene(event->pos()).toPoint();
-
     //Maps left click to inactive, right click to active
     bool active;
     if (event->button() == Qt::LeftButton)
@@ -70,9 +68,15 @@ void MaskPainterGraphicsView::mousePressEvent(QMouseEvent *event)
     else
         return;
 
+    const QPoint clickPos = mapToScene(event->pos()).toPoint();
+
     if (activeTool == Tool::Brush)
     {
         drawCircle(clickPos, active);
+    }
+    else if (activeTool == Tool::Rect)
+    {
+        clickStart = clickPos;
     }
     else if (activeTool == Tool::Fill)
     {
@@ -85,8 +89,6 @@ void MaskPainterGraphicsView::mousePressEvent(QMouseEvent *event)
 //Mouse events used for painting mask
 void MaskPainterGraphicsView::mouseMoveEvent(QMouseEvent *event)
 {
-    const QPoint clickPos = mapToScene(event->pos()).toPoint();
-
     //Maps left click to inactive, right click to active
     bool active;
     if (event->buttons() == Qt::LeftButton)
@@ -96,9 +98,33 @@ void MaskPainterGraphicsView::mouseMoveEvent(QMouseEvent *event)
     else
         return;
 
+    const QPoint clickPos = mapToScene(event->pos()).toPoint();
+
     if (activeTool == Tool::Brush)
     {
         drawCircle(clickPos, active);
+    }
+
+    updateImage();
+}
+
+//Mouse events used for painting mask
+void MaskPainterGraphicsView::mouseReleaseEvent(QMouseEvent *event)
+{
+    //Maps left click to inactive, right click to active
+    bool active;
+    if (event->button() == Qt::LeftButton)
+        active = false;
+    else if (event->button() == Qt::RightButton)
+        active = true;
+    else
+        return;
+
+    const QPoint clickPos = mapToScene(event->pos()).toPoint();
+
+    if (activeTool == Tool::Rect)
+    {
+        drawRect(clickStart, clickPos, active);
     }
 
     updateImage();
@@ -156,6 +182,25 @@ void MaskPainterGraphicsView::drawCircle(const QPoint &t_center, const bool acti
                 colour.setAlpha(active ? 255 : 0);
                 image.setPixelColor(t_center.x() + x, t_center.y() + y, colour);
             }
+        }
+    }
+}
+
+//Draws rectangle on image alpha
+void MaskPainterGraphicsView::drawRect(const QPoint &t_start, const QPoint &t_end, const bool active)
+{
+    const int minX = std::clamp(std::min(t_start.x(), t_end.x()), 0, image.width()-1);
+    const int maxX = std::clamp(std::max(t_start.x(), t_end.x()), 0, image.width()-1);
+    const int minY = std::clamp(std::min(t_start.y(), t_end.y()), 0, image.height()-1);
+    const int maxY = std::clamp(std::max(t_start.y(), t_end.y()), 0, image.height()-1);
+
+    for (int y = minY; y <= maxY; ++y)
+    {
+        for (int x = minX; x <= maxX; ++x)
+        {
+            QColor colour = image.pixelColor(x, y);
+            colour.setAlpha(active ? 255 : 0);
+            image.setPixelColor(x, y, colour);
         }
     }
 }

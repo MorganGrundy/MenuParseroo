@@ -18,7 +18,7 @@ public:
     explicit MaskPainterGraphicsView(QWidget *parent = nullptr);
     ~MaskPainterGraphicsView();
 
-    enum class Tool {Brush, Fill};
+    enum class Tool {Brush, Rect, Fill};
 
     //Sets the image
     void setImage(const QImage &t_image);
@@ -39,6 +39,7 @@ protected:
     //Mouse events used for painting
     void mousePressEvent(QMouseEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;
+    void mouseReleaseEvent(QMouseEvent *event) override;
 
 private:
     QImage image;
@@ -47,8 +48,12 @@ private:
     Tool activeTool;
     int brushSize;
 
+    QPoint clickStart;
+
     //Draws ellipse on image alpha
     void drawCircle(const QPoint &t_center, const bool active);
+    //Draws rectangle on image alpha
+    void drawRect(const QPoint &t_start, const QPoint &t_end, const bool active);
     //Fills the connected component at position on image alpha
     void fillConnectedComponent(const QPoint &t_pos, const bool active);
 

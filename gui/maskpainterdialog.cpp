@@ -22,6 +22,8 @@ MaskPainterDialog::MaskPainterDialog(const QImage &t_image, QWidget *parent) :
             this, [=](QAbstractButton *button){
                 if (button->text().contains("Brush"))
                     ui->graphicsView->setTool(MaskPainterGraphicsView::Tool::Brush);
+                else if (button->text().contains("Rect"))
+                    ui->graphicsView->setTool(MaskPainterGraphicsView::Tool::Rect);
                 else if (button->text().contains("Fill"))
                     ui->graphicsView->setTool(MaskPainterGraphicsView::Tool::Fill);
                 else
