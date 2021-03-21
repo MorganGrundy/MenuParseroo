@@ -49,6 +49,8 @@ private:
 
     //Draws ellipse on image alpha
     void drawCircle(const QPoint &t_center, const bool active);
+    //Fills the connected component at position on image alpha
+    void fillConnectedComponent(const QPoint &t_pos, const bool active);
 
     //Updates image item with new image
     void updateImage();

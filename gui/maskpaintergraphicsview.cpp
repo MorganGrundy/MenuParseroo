@@ -1,6 +1,7 @@
 #include "maskpaintergraphicsview.h"
 
 #include <iostream>
+#include <queue>
 
 #include <QCoreApplication>
 
@@ -76,7 +77,7 @@ void MaskPainterGraphicsView::mousePressEvent(QMouseEvent *event)
     }
     else if (activeTool == Tool::Fill)
     {
-        //Fill connected component
+        fillConnectedComponent(clickPos, active);
     }
 
     updateImage();
@@ -156,6 +157,57 @@ void MaskPainterGraphicsView::drawCircle(const QPoint &t_center, const bool acti
                 colour.setAlpha(active ? 255 : 0);
                 image.setPixelColor(t_center.x() + x, t_center.y() + y, colour);
             }
+        }
+    }
+}
+
+//Fills the connected component at position on image alpha
+void MaskPainterGraphicsView::fillConnectedComponent(const QPoint &t_pos, const bool active)
+{
+    //Position is in image bounds
+    if (t_pos.x() >= 0 && t_pos.x() < image.width() &&
+        t_pos.y() >= 0 && t_pos.y() < image.height())
+    {
+        const QColor targetColour = image.pixelColor(t_pos);
+        //Pixel must not have the same active state
+        if ((targetColour.alpha() != 0) != active)
+        {
+            //Iterate over pixels setting new active state and adding adjacent pixels to queue
+            std::queue<QPoint> pixels;
+            pixels.emplace(t_pos);
+
+            do
+            {
+                //Get pixel from queue
+                const QPoint currentPixel = pixels.front();
+                QColor currentColour = image.pixelColor(currentPixel);
+                pixels.pop();
+
+                if (currentColour == targetColour)
+                {
+                    //Set pixel alpha
+                    currentColour.setAlpha(active ? 255 : 0);
+                    image.setPixelColor(currentPixel, currentColour);
+
+                    //Add adjacent pixels to queue
+                    if (currentPixel.x()-1 >= 0 && currentPixel.x()-1 < image.width() &&
+                        currentPixel.y() >= 0 && currentPixel.y() < image.height())
+                        pixels.emplace(currentPixel.x()-1, currentPixel.y());
+
+                    if (currentPixel.x()+1 >= 0 && currentPixel.x()+1 < image.width() &&
+                        currentPixel.y() >= 0 && currentPixel.y() < image.height())
+                        pixels.emplace(currentPixel.x()+1, currentPixel.y());
+
+                    if (currentPixel.x() >= 0 && currentPixel.x() < image.width() &&
+                        currentPixel.y()-1 >= 0 && currentPixel.y()-1 < image.height())
+                        pixels.emplace(currentPixel.x(), currentPixel.y()-1);
+
+                    if (currentPixel.x() >= 0 && currentPixel.x() < image.width() &&
+                        currentPixel.y()+1 >= 0 && currentPixel.y()+1 < image.height())
+                        pixels.emplace(currentPixel.x(), currentPixel.y()+1);
+                }
+            }
+            while (!pixels.empty());
         }
     }
 }
