@@ -94,6 +94,7 @@ void MaskPainterGraphicsView::mousePressEvent(QMouseEvent *event)
     }
     else if (activeTool == Tool::Rect)
     {
+        rectPreview->setVisible(true);
         clickStart = clickPos;
     }
     else if (activeTool == Tool::Fill)
@@ -125,6 +126,17 @@ void MaskPainterGraphicsView::mouseMoveEvent(QMouseEvent *event)
         if (isClick)
             drawCircle(mousePos, active);
     }
+    else if (activeTool == Tool::Rect)
+    {
+        if (!clickStart.isNull())
+        {
+            const int minX = std::min(clickStart.x(), mousePos.x());
+            const int maxX = std::max(clickStart.x(), mousePos.x());
+            const int minY = std::min(clickStart.y(), mousePos.y());
+            const int maxY = std::max(clickStart.y(), mousePos.y());
+            rectPreview->setRect(minX, minY, maxX - minX, maxY - minY);
+        }
+    }
 
     updateImage();
 }
@@ -145,8 +157,12 @@ void MaskPainterGraphicsView::mouseReleaseEvent(QMouseEvent *event)
 
     if (activeTool == Tool::Rect)
     {
+        rectPreview->setVisible(false);
+        rectPreview->setRect(0, 0, 0, 0);
         drawRect(clickStart, clickPos, active);
     }
+
+    clickStart = QPoint();
 
     updateImage();
 }
