@@ -19,8 +19,7 @@ MaskPainterGraphicsView::~MaskPainterGraphicsView() {}
 //Sets the image
 void MaskPainterGraphicsView::setImage(const QImage &t_image)
 {
-    //Add alpha channel if image has none
-    if (t_image.hasAlphaChannel())
+    if (t_image.format() == QImage::Format_RGBA8888)
         image = t_image;
     else
         image = t_image.convertToFormat(QImage::Format_RGBA8888);
