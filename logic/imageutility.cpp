@@ -93,12 +93,9 @@ bool ImageUtility::mergeAlpha(QImage &t_image, const QImage &t_alpha)
     if (t_image.size() != t_alpha.size() || !t_alpha.hasAlphaChannel())
         return false;
 
-    //If image has no alpha can just set
+    //If image has no alpha then add one
     if (!t_image.hasAlphaChannel())
-    {
-        t_image.setAlphaChannel(t_alpha);
-        return true;
-    }
+        t_image = t_image.convertToFormat(QImage::Format_RGBA8888);
 
     //Merge alpha channels
     for (int x = 0; x < t_image.width(); ++x)
