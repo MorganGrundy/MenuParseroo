@@ -16,7 +16,7 @@ OCRGraphicsView::OCRGraphicsView(QWidget *parent)
     : ZoomableGraphicsView(parent),
     threshold{127}, otsu{false},
     currentImage{Image::Original},
-    tess_ri{}, tess_level{tesseract::PageIteratorLevel::RIL_WORD},
+    tess_level{tesseract::PageIteratorLevel::RIL_WORD},
     selectedText{nullptr}
 {
     setDragMode(ScrollHandDrag);
@@ -31,40 +31,9 @@ OCRGraphicsView::OCRGraphicsView(QWidget *parent)
     thresholdImageItem = scene()->addPixmap(QPixmap());
     grayImageItem->hide();
     thresholdImageItem->hide();
-
-    //Get path to tesseract config file
-    const QDir appDir(qApp->applicationDirPath());
-    const QString configFile(appDir.absoluteFilePath("tesseract.config"));
-    QByteArray configByteArray = configFile.toLocal8Bit();
-    char *configs[] = {configByteArray.data()};
-
-    //Create vars that contain a relative filepath
-    GenericVector<STRING> vars, varValues;
-    vars.push_back("user_words_file");
-    varValues.push_back(appDir.absoluteFilePath("eng.user-words").toLocal8Bit().constData());
-    vars.push_back("user_patterns_file");
-    varValues.push_back(appDir.absoluteFilePath("eng.user-patterns").toLocal8Bit().constData());
-
-    //Initialize tesseract with English
-    if (tess_api.Init(NULL, "eng-fast", tesseract::OcrEngineMode::OEM_LSTM_ONLY, configs, 1,
-                      &vars, &varValues, true))
-    {
-        std::cerr << __FILE__":" << __LINE__ << " - Could not initialize tesseract\n";
-        QCoreApplication::exit(-1);
-    }
-    tess_api.SetPageSegMode(tesseract::PageSegMode::PSM_AUTO);
-
-    //Saves alternate symbol choices from OCR
-    //tess_api.SetVariable("save_blob_choices", "T");
-
-    //Output tesseract variables to a file
-    tess_api.PrintVariables(fopenWriteStream("E:/Desktop/MenuParseroo/variables.txt", "w"));
 }
 
-OCRGraphicsView::~OCRGraphicsView()
-{
-    tess_api.End();
-}
+OCRGraphicsView::~OCRGraphicsView() {}
 
 //Sets image of graphics view at given index
 void OCRGraphicsView::setImage(const cv::Mat &t_image)
@@ -117,52 +86,72 @@ void OCRGraphicsView::showImage(const Image t_type)
         currentImage = t_type;
     }
 }
+#include "fontmetric.h"
 
 //Sets the level of OCR results that are shown
 void OCRGraphicsView::setOCRLevel(const tesseract::PageIteratorLevel t_level)
 {
     clearFontMetricItems();
 
-    //Iterate level, adding font metric items
-    if(tess_ri != nullptr)
+    std::map<int, int> fontSizeFrequency;
+    for (size_t i = 0; i < tessOCR.size(); ++i)
     {
-        std::map<int, int> fontSizeFrequency;
-        tess_ri->Begin();
-        do
+        auto tess_ri = tessOCR.getResult(i);
+        double scale = tessOCR.getScale(i);
+        //Iterate level, adding font metric items
+        if(tess_ri != nullptr)
         {
-            //Ignore images
-            if (tess_ri->BlockType() != PolyBlockType::PT_FLOWING_IMAGE &&
-                tess_ri->BlockType() != PolyBlockType::PT_HEADING_IMAGE &&
-                tess_ri->BlockType() != PolyBlockType::PT_PULLOUT_IMAGE)
+            tess_ri->Begin();
+            do
             {
-                //Get text bounding box and baseline
-                int x1, y1, x2, y2;
-                tess_ri->BoundingBox(t_level, &x1, &y1, &x2, &y2);
-                int base_x1, base_y1, base_x2, base_y2;
-                tess_ri->Baseline(t_level, &base_x1, &base_y1, &base_x2, &base_y2);
+                //Ignore images
+                if (tess_ri->BlockType() != PolyBlockType::PT_FLOWING_IMAGE &&
+                    tess_ri->BlockType() != PolyBlockType::PT_HEADING_IMAGE &&
+                    tess_ri->BlockType() != PolyBlockType::PT_PULLOUT_IMAGE)
+                {
+                    //Get text bounding box and baseline
+                    int x1, y1, x2, y2;
+                    tess_ri->BoundingBox(t_level, &x1, &y1, &x2, &y2);
 
-                //Add font metric item to scene
-                fontMetricItems.push_back(new GraphicsFontMetricItem(x1, y1, x2 - x1,
-                                                                     y2 - y1, base_y1 - y1));
-                scene()->addItem(fontMetricItems.back());
-                //Add OCR text to item data, also add ascender and descender of font metrics
-                fontMetricItems.back()->setData(0, QVariant("Ascender = " + QString::number(base_y1 - y1) + "\n"
-                                                            + "Descender = " + QString::number(y2 - base_y1) + "\n"
-                                                            + QString(tess_ri->GetUTF8Text(t_level))));
+                    int base_x1, base_y1, base_x2, base_y2;
+                    tess_ri->Baseline(t_level, &base_x1, &base_y1, &base_x2, &base_y2);
 
-                int fontSize = static_cast<int>(std::round(base_y1 - y1));
-                if (fontSizeFrequency.count(fontSize) == 0)
-                    fontSizeFrequency[fontSize] = 1;
-                else
-                    ++fontSizeFrequency.at(fontSize);
+                    try
+                    {
+                        FontMetric metric(std::string(tess_ri->GetUTF8Text(t_level)), y2-y1, base_y1 - y1);
+
+                        if (metric.ascender > 25 && metric.ascender < 40)
+                        {
+                            //Add font metric item to scene
+                            fontMetricItems.push_back(new GraphicsFontMetricItem(x1 * scale, y1 * scale, (x2 - x1) * scale,
+                                                                                 (y2 - y1) * scale, (base_y1 - y1) * scale));
+                            scene()->addItem(fontMetricItems.back());
+                            //Add OCR text to item data, also add ascender and descender of font metrics
+                            fontMetricItems.back()->setData(0, QVariant("Ascender = " + QString::number(metric.ascender) + "\n"
+                                                                        + "Descender = " + QString::number(metric.descender) + "\n"
+                                                                        + QString(tess_ri->GetUTF8Text(t_level))));
+
+                            int fontSize = static_cast<int>(std::round(metric.ascender));
+                            if (fontSizeFrequency.count(fontSize) == 0)
+                                fontSizeFrequency[fontSize] = 1;
+                            else
+                                ++fontSizeFrequency.at(fontSize);
+                        }
+                    }
+                    catch (const std::exception &e)
+                    {
+
+                    }
+                }
             }
-        } while((tess_ri->Next(t_level)));
-
-        QString fontSizeFreqStr = "";
-        for (auto it: fontSizeFrequency)
-            fontSizeFreqStr += QString::number(it.first) + " = " + QString::number(it.second) + "\n";
-        emit textBoundClicked(fontSizeFreqStr);
+            while((tess_ri->Next(t_level)));
+        }
     }
+
+    QString fontSizeFreqStr = "";
+    for (auto it: fontSizeFrequency)
+        fontSizeFreqStr += QString::number(it.first) + " = " + QString::number(it.second) + "\n";
+    emit textBoundClicked(fontSizeFreqStr);
 
     tess_level = t_level;
 }
@@ -209,10 +198,8 @@ void OCRGraphicsView::OCR()
 {
     if (!thresholdImage.empty())
     {
-        tess_api.SetImage(thresholdImage.data, thresholdImage.cols, thresholdImage.rows,
-                          thresholdImage.channels(), static_cast<int>(thresholdImage.step));
-        tess_api.Recognize(NULL);
-        tess_ri = std::shared_ptr<tesseract::ResultIterator>(tess_api.GetIterator());
+        tessOCR.setImage(thresholdImage);
+        tessOCR.OCR();
 
         setOCRLevel(tess_level);
     }
@@ -282,7 +269,7 @@ QGraphicsPixmapItem *OCRGraphicsView::getFontMetricItem(const Image t_type)
 //Clears tesseract result
 void OCRGraphicsView::clearTesseract()
 {
-    tess_ri.reset();
+    tessOCR.clear();
     clearFontMetricItems();
 }
 

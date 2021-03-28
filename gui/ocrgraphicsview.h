@@ -13,6 +13,7 @@
 #include <opencv2/core.hpp>
 
 #include "zoomablegraphicsview.h"
+#include "multiscaleocr.h"
 
 class OCRGraphicsView : public ZoomableGraphicsView
 {
@@ -63,8 +64,7 @@ private:
     Image currentImage;
 
     //Tesseract
-    tesseract::TessBaseAPI tess_api;
-    std::shared_ptr<tesseract::ResultIterator> tess_ri;
+    MultiscaleOCR tessOCR;
     tesseract::PageIteratorLevel tess_level;
 
     //Font metric items for text (also has text in data 0)
