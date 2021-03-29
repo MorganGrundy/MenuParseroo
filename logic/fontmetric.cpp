@@ -45,23 +45,64 @@ FontMetric::FontMetric(const cv::Mat t_image, const cv::Rect t_bounds, const std
 
     //Get connected components of text
     cv::Mat labelImage(textImage.size(), CV_16U);
-    int nLabels = cv::connectedComponents(textImage, labelImage, 8);
+    size_t nLabels = cv::connectedComponents(textImage, labelImage, 8);
 
-    //Calculate expected number of components
-    int expectedComponents = text.length();
-    //Characters with more than one component
-    for (const char character: text)
+    //Calculate components per character
+    std::vector<size_t> charComponents(text.length(), 0);
+    for (size_t i = 0; i < text.length(); ++i)
     {
-        //2 components = !":;=?ij
-        if (character == '!' || character == '"' || character == ':' || character == ';' ||
-            character == '=' || character == '?' || character == 'i' || character == 'j')
-            ++expectedComponents;
         //3 components = %
-        else if (character == '%')
-            expectedComponents += 2;
+        if (text.at(i) == '%')
+            charComponents.at(i) = 3;
+        //2 components = !":;=?ij
+        else if (text.at(i) == '!' || text.at(i) == '"' || text.at(i) == ':' || text.at(i) == ';' ||
+                 text.at(i) == '=' || text.at(i) == '?' || text.at(i) == 'i' || text.at(i) == 'j')
+            charComponents.at(i) = 2;
+        else
+            charComponents.at(i) = 1;
     }
 
+    //Calculate expected number of components
+    const size_t expectedComponents = std::accumulate(charComponents.cbegin(),
+                                                      charComponents.cend(), 0);
+
     //If we have the expected number of components then getting font metrics is easier :D
+    if (expectedComponents != (nLabels - 1))
+    {
+        std::cerr << __FILE__":" << __LINE__ << " - Expected components:" << expectedComponents <<
+            " Actual components:" << nLabels-1 << "\n";
+    }
+
+    //Map characters to components
+    std::vector<std::vector<size_t>> characterComponents;
+    size_t currentCharIndex = 0;
+    size_t currentCharComponents = charComponents.at(0);
+    std::vector<bool> componentIsMapped(nLabels, false);
+    //Iterate columns mapping components to characters
+    for (int x = 0; x < labelImage.cols && currentCharIndex < text.length(); ++x)
+    {
+        for (int y = 0; x < labelImage.rows && currentCharIndex < text.length(); ++y)
+        {
+            const uchar component = labelImage.at<uchar>(y, x);
+            if (!componentIsMapped.at(component))
+            {
+                //Map component to current character
+                characterComponents.at(currentCharIndex).push_back(component);
+                componentIsMapped.at(component) = true;
+
+                --currentCharComponents;
+                //If all character components are mapped move to next character
+                if (currentCharComponents == 0)
+                {
+                    ++currentCharIndex;
+                    if (currentCharIndex > text.length())
+                        break;
+
+                    currentCharComponents = charComponents.at(currentCharIndex);
+                }
+            }
+        }
+    }
 
     //Get all labels at baseline
     std::vector<bool> baselineLabels(nLabels, false);
