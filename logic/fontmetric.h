@@ -16,9 +16,11 @@ public:
 
 private:
     //Image that contains text
-    cv::Mat image;
+    cv::Mat parentImage;
     //Bounds of text in image
     cv::Rect bounds;
+    //Image bounded to text
+    cv::Mat textImage;
 
     std::string text;
     std::vector<CharProperty> properties;
@@ -31,6 +33,14 @@ private:
     int baseline; //Pixels from top of bounds to baseline
 
     int descender; //Pixels below baseline to descender
+
+    //Returns the number of expected components for each character in text
+    std::vector<size_t> getExpectedComponentCount();
+
+    //Returns for each character in text the components that belong to it
+    std::vector<std::vector<size_t>>
+    mapCharacterComponents(const cv::Mat &componentImage, const size_t componentCount,
+                           const std::vector<size_t> &charComponentCounts);
 };
 
 #endif // FONTMETRIC_H
