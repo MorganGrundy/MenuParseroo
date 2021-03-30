@@ -6,6 +6,12 @@ GraphicsFontMetricItem::GraphicsFontMetricItem(
     : QGraphicsItem{parent}, rect{x, y, width, height}, baseline{t_baseline}
 {}
 
+GraphicsFontMetricItem::GraphicsFontMetricItem(const FontMetric &fontMetric, QGraphicsItem *parent)
+    : QGraphicsItem{parent}, rect(fontMetric.getBounds().x, fontMetric.getBounds().y,
+           fontMetric.getBounds().width, fontMetric.getBounds().height),
+    baseline{fontMetric.getBaseline()}
+{}
+
 QRectF GraphicsFontMetricItem::boundingRect() const
 {
     return rect;

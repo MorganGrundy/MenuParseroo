@@ -94,58 +94,21 @@ void OCRGraphicsView::setOCRLevel(const tesseract::PageIteratorLevel t_level)
     clearFontMetricItems();
 
     std::map<int, int> fontSizeFrequency;
-    for (size_t i = 0; i < tessOCR.size(); ++i)
+    for (const auto &result: tessOCR)
     {
-        auto tess_ri = tessOCR.getResult(i);
-        double scale = tessOCR.getScale(i);
-        //Iterate level, adding font metric items
-        if(tess_ri != nullptr)
-        {
-            tess_ri->Begin();
-            do
-            {
-                //Ignore images
-                if (tess_ri->BlockType() != PolyBlockType::PT_FLOWING_IMAGE &&
-                    tess_ri->BlockType() != PolyBlockType::PT_HEADING_IMAGE &&
-                    tess_ri->BlockType() != PolyBlockType::PT_PULLOUT_IMAGE)
-                {
-                    //Get text bounding box and baseline
-                    int x1, y1, x2, y2;
-                    tess_ri->BoundingBox(t_level, &x1, &y1, &x2, &y2);
+        //Add font metric item to scene
+        fontMetricItems.push_back(new GraphicsFontMetricItem(result));
+        scene()->addItem(fontMetricItems.back());
+        //Add OCR text to item data, also add ascender and descender of font metrics
+        fontMetricItems.back()->setData(0, QVariant("Ascender = " + QString::number(result.getAscender()) + "\n"
+                                                    + "Descender = " + QString::number(result.getDescender()) + "\n"
+                                                    + QString::fromStdString(result.getText())));
 
-                    int base_x1, base_y1, base_x2, base_y2;
-                    tess_ri->Baseline(t_level, &base_x1, &base_y1, &base_x2, &base_y2);
-
-                    try
-                    {
-                        FontMetric metric(std::string(tess_ri->GetUTF8Text(t_level)), y2-y1, base_y1 - y1);
-
-                        if (metric.ascender > 25 && metric.ascender < 40)
-                        {
-                            //Add font metric item to scene
-                            fontMetricItems.push_back(new GraphicsFontMetricItem(x1 * scale, y1 * scale, (x2 - x1) * scale,
-                                                                                 (y2 - y1) * scale, (base_y1 - y1) * scale));
-                            scene()->addItem(fontMetricItems.back());
-                            //Add OCR text to item data, also add ascender and descender of font metrics
-                            fontMetricItems.back()->setData(0, QVariant("Ascender = " + QString::number(metric.ascender) + "\n"
-                                                                        + "Descender = " + QString::number(metric.descender) + "\n"
-                                                                        + QString(tess_ri->GetUTF8Text(t_level))));
-
-                            int fontSize = static_cast<int>(std::round(metric.ascender));
-                            if (fontSizeFrequency.count(fontSize) == 0)
-                                fontSizeFrequency[fontSize] = 1;
-                            else
-                                ++fontSizeFrequency.at(fontSize);
-                        }
-                    }
-                    catch (const std::exception &e)
-                    {
-
-                    }
-                }
-            }
-            while((tess_ri->Next(t_level)));
-        }
+        int fontSize = static_cast<int>(std::round(result.getAscender()));
+        if (fontSizeFrequency.count(fontSize) == 0)
+            fontSizeFrequency[fontSize] = 1;
+        else
+            ++fontSizeFrequency.at(fontSize);
     }
 
     QString fontSizeFreqStr = "";

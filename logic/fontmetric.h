@@ -11,16 +11,34 @@
 class FontMetric
 {
 public:
-    FontMetric(const cv::Mat t_image, const cv::Rect t_bounds, const std::string t_text,
+    FontMetric(const cv::Mat &t_image, const cv::Rect t_bounds, const std::string &t_text,
                const int t_baseline);
 
+    //Returns bounds of text
+    const cv::Rect &getBounds() const;
+
+    //Returns text
+    std::string getText() const;
+
+    //Returns ascender
+    int getAscender() const;
+    //Returns capital
+    int getCapital() const;
+    //Returns median
+    int getMedian() const;
+
+    //Returns baseline
+    int getBaseline() const;
+
+    //Returns descender
+    int getDescender() const;
+
+    //Scales the font metric by given factor
+    void scale(const double factor);
+
 private:
-    //Image that contains text
-    cv::Mat parentImage;
     //Bounds of text in image
     cv::Rect bounds;
-    //Image bounded to text
-    cv::Mat textImage;
 
     std::string text;
     std::vector<CharProperty> properties;
@@ -34,6 +52,7 @@ private:
 
     int descender; //Pixels below baseline to descender
 
+    //----------------------------------------------------------------------------------------------
     //Returns the number of expected components for each character in text
     std::vector<size_t> getExpectedComponentCount();
 

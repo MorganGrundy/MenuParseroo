@@ -8,6 +8,8 @@
 
 #include <opencv2/core.hpp>
 
+#include "fontmetric.h"
+
 class MultiscaleOCR
 {
 public:
@@ -21,16 +23,18 @@ public:
     void OCR();
 
     //Return number of scales
-    size_t size();
-
-    //Returns result iterator
-    std::shared_ptr<tesseract::ResultIterator> getResult(const size_t i);
+    size_t size() const;
 
     //Returns scale
-    double getScale(const size_t i);
+    double getScale(const size_t i) const;
 
     //Clears results
     void clear();
+
+    //Const iterator for beginning of OCR results
+    std::vector<FontMetric>::const_iterator begin() const;
+    //Const iterator for end of OCR results
+    std::vector<FontMetric>::const_iterator end() const;
 
 private:
     //Target scales at which to perform OCR
@@ -42,10 +46,9 @@ private:
     cv::Mat image;
 
     //Tesseract api
-    std::vector<tesseract::TessBaseAPI> tess_api;
+    tesseract::TessBaseAPI tess_api;
     //Tesseract results
-    std::vector<std::shared_ptr<tesseract::ResultIterator>> results;
-
+    std::vector<FontMetric> results;
 };
 
 #endif // MULTISCALEOCR_H

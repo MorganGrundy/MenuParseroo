@@ -14,50 +14,39 @@ MultiscaleOCR::MultiscaleOCR()
 {
     actualScales.resize(targetScales.size());
 
-    //Create new tesseract api
-    const size_t oldSize = tess_api.size();
-    tess_api.resize(targetScales.size());
 
-    //Initialise new tesseract api
-    for (size_t i = oldSize; i < tess_api.size(); ++i)
+    //Get path to tesseract config file
+    const QDir appDir(qApp->applicationDirPath());
+    const QString configFile(appDir.absoluteFilePath("tesseract.config"));
+    QByteArray configByteArray = configFile.toLocal8Bit();
+    char *configs[] = {configByteArray.data()};
+
+    //Create vars that contain a relative filepath
+    GenericVector<STRING> vars, varValues;
+    vars.push_back("user_words_file");
+    varValues.push_back(appDir.absoluteFilePath("eng.user-words").toLocal8Bit().constData());
+    vars.push_back("user_patterns_file");
+    varValues.push_back(appDir.absoluteFilePath("eng.user-patterns").toLocal8Bit().constData());
+
+    //Initialize tesseract with English
+    if (tess_api.Init(NULL, "eng-fast", tesseract::OcrEngineMode::OEM_LSTM_ONLY, configs, 1,
+                      &vars, &varValues, true))
     {
-        //Get path to tesseract config file
-        const QDir appDir(qApp->applicationDirPath());
-        const QString configFile(appDir.absoluteFilePath("tesseract.config"));
-        QByteArray configByteArray = configFile.toLocal8Bit();
-        char *configs[] = {configByteArray.data()};
-
-        //Create vars that contain a relative filepath
-        GenericVector<STRING> vars, varValues;
-        vars.push_back("user_words_file");
-        varValues.push_back(appDir.absoluteFilePath("eng.user-words").toLocal8Bit().constData());
-        vars.push_back("user_patterns_file");
-        varValues.push_back(appDir.absoluteFilePath("eng.user-patterns").toLocal8Bit().constData());
-
-        //Initialize tesseract with English
-        if (tess_api.at(i).Init(NULL, "eng-fast", tesseract::OcrEngineMode::OEM_LSTM_ONLY, configs, 1,
-                                &vars, &varValues, true))
-        {
-            std::cerr << __FILE__":" << __LINE__ << " - Could not initialize tesseract\n";
-            QCoreApplication::exit(-1);
-        }
-        tess_api.at(i).SetPageSegMode(tesseract::PageSegMode::PSM_AUTO);
-
-        //Saves alternate symbol choices from OCR
-        //tess_api.at(i).SetVariable("save_blob_choices", "T");
-
-        //Output tesseract variables to a file
-        //tess_api.at(i).PrintVariables(fopenWriteStream("E:/Desktop/MenuParseroo/variables.txt", "w"));
+        std::cerr << __FILE__":" << __LINE__ << " - Could not initialize tesseract\n";
+        QCoreApplication::exit(-1);
     }
+    tess_api.SetPageSegMode(tesseract::PageSegMode::PSM_AUTO);
 
-    //Create new result pointers
-    results.resize(targetScales.size());
+    //Saves alternate symbol choices from OCR
+    //tess_api.at(i).SetVariable("save_blob_choices", "T");
+
+    //Output tesseract variables to a file
+    //tess_api.at(i).PrintVariables(fopenWriteStream("E:/Desktop/MenuParseroo/variables.txt", "w"));
 }
 
 MultiscaleOCR::~MultiscaleOCR()
 {
-    for (auto api: tess_api)
-        api.End();
+    tess_api.End();
 }
 
 //Sets image that is OCRed
@@ -91,27 +80,60 @@ void MultiscaleOCR::OCR()
 
 
         //Set image, perform OCR, and get result iterator
-        tess_api.at(i).SetImage(scaledIm.data, scaledIm.cols, scaledIm.rows,
+        tess_api.SetImage(scaledIm.data, scaledIm.cols, scaledIm.rows,
                           scaledIm.channels(), static_cast<int>(scaledIm.step));
-        tess_api.at(i).Recognize(NULL);
-        results.at(i) = std::shared_ptr<tesseract::ResultIterator>(tess_api.at(i).GetIterator());
+        tess_api.Recognize(NULL);
+        auto tess_ri = std::shared_ptr<tesseract::ResultIterator>(tess_api.GetIterator());
+
+        //Filter results
+        if(tess_ri != nullptr)
+        {
+            tess_ri->Begin();
+            do
+            {
+                //Ignore images
+                if (tess_ri->BlockType() != PolyBlockType::PT_FLOWING_IMAGE &&
+                    tess_ri->BlockType() != PolyBlockType::PT_HEADING_IMAGE &&
+                    tess_ri->BlockType() != PolyBlockType::PT_PULLOUT_IMAGE)
+                {
+                    //Get text bounding box and baseline
+                    int x1, y1, x2, y2;
+                    tess_ri->BoundingBox(tesseract::RIL_WORD, &x1, &y1, &x2, &y2);
+
+                    int base_x1, base_y1, base_x2, base_y2;
+                    tess_ri->Baseline(tesseract::RIL_WORD, &base_x1, &base_y1, &base_x2, &base_y2);
+
+                    try
+                    {
+                        FontMetric metric(scaledIm, cv::Rect(x1, y1, x2 - x1, y2 - y1),
+                                          std::string(tess_ri->GetUTF8Text(tesseract::RIL_WORD)),
+                                          base_y1 - y1);
+
+                        if (metric.getAscender() > 25 && metric.getAscender() < 40)
+                        {
+                            metric.scale(1.0 / targetScales.at(i));
+                            results.push_back(metric);
+                        }
+                    }
+                    catch (const std::exception &e)
+                    {
+                        std::cerr << e.what() << "\n";
+                    }
+                }
+            }
+            while((tess_ri->Next(tesseract::RIL_WORD)));
+        }
     }
 }
 
 //Return number of scales
-size_t MultiscaleOCR::size()
+size_t MultiscaleOCR::size() const
 {
     return targetScales.size();
 }
 
-//Returns result iterator
-std::shared_ptr<tesseract::ResultIterator> MultiscaleOCR::getResult(const size_t i)
-{
-    return results.at(i);
-}
-
 //Returns scale
-double MultiscaleOCR::getScale(const size_t i)
+double MultiscaleOCR::getScale(const size_t i) const
 {
     return actualScales.at(i);
 }
@@ -119,6 +141,17 @@ double MultiscaleOCR::getScale(const size_t i)
 //Clears results
 void MultiscaleOCR::clear()
 {
-    for (auto result: results)
-        result.reset();
+    results.clear();
+}
+
+//Const iterator for beginning of OCR results
+std::vector<FontMetric>::const_iterator MultiscaleOCR::begin() const
+{
+    return results.cbegin();
+}
+
+//Const iterator for end of OCR results
+std::vector<FontMetric>::const_iterator MultiscaleOCR::end() const
+{
+    return results.cend();
 }

@@ -4,11 +4,14 @@
 #include <QGraphicsItem>
 #include <QPainter>
 
+#include "fontmetric.h"
+
 class GraphicsFontMetricItem : public QGraphicsItem
 {
 public:
     GraphicsFontMetricItem(const qreal x, const qreal y, const qreal width, const qreal height,
                              const int t_baseline, QGraphicsItem *parent = nullptr);
+    GraphicsFontMetricItem(const FontMetric &fontMetric, QGraphicsItem *parent = nullptr);
 
     QRectF boundingRect() const override;
 

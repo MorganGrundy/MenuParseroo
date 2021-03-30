@@ -6,10 +6,9 @@
 
 #include <QCoreApplication>
 
-FontMetric::FontMetric(const cv::Mat t_image, const cv::Rect t_bounds, const std::string t_text,
+FontMetric::FontMetric(const cv::Mat &t_image, const cv::Rect t_bounds, const std::string &t_text,
                        const int t_baseline)
-    : parentImage{t_image}, bounds{t_bounds}, textImage{t_image(t_bounds)},
-    text{t_text}, baseline{t_baseline}, descender{0}
+    : bounds{t_bounds}, text{t_text}, baseline{t_baseline}, descender{0}
 {
     //Baseline must be atleast 2
     if (baseline < 2)
@@ -41,6 +40,9 @@ FontMetric::FontMetric(const cv::Mat t_image, const cv::Rect t_bounds, const std
             hasDescender = true;
     }
 
+    //Image bounded to text
+    const cv::Mat textImage = t_image(bounds);
+
     //Get connected components of text
     cv::Mat componentImage(textImage.size(), CV_16U);
     size_t componentCount = cv::connectedComponents(textImage, componentImage, 8);
@@ -48,13 +50,13 @@ FontMetric::FontMetric(const cv::Mat t_image, const cv::Rect t_bounds, const std
     //Calculate components per character and expected total
     const std::vector<size_t> charComponentCounts = getExpectedComponentCount();
     const size_t expectedComponents = std::accumulate(charComponentCounts.cbegin(),
-                                                      charComponentCounts.cend(), 0);
+                                                      charComponentCounts.cend(), size_t(0));
 
     //If we have the expected number of components then getting font metrics is easier :D
     if (expectedComponents != (componentCount - 1))
     {
         std::cerr << __FILE__":" << __LINE__ << " - Expected components:" << expectedComponents <<
-            " Actual components:" << componentCount-1 << "\n";
+            " Actual components:" << componentCount - 1 << "\n";
     }
 
     //Map characters to components
@@ -91,11 +93,73 @@ FontMetric::FontMetric(const cv::Mat t_image, const cv::Rect t_bounds, const std
                 }
             }
         }
+
+        ascender = descender * 2;
     }
     else
     {
         //Guess descender
     }
+}
+
+//Returns bounds of text
+const cv::Rect &FontMetric::getBounds() const
+{
+    return bounds;
+}
+
+//Returns text
+std::string FontMetric::getText() const
+{
+    return text;
+}
+
+//Returns ascender
+int FontMetric::getAscender() const
+{
+    return ascender;
+}
+
+//Returns capital
+int FontMetric::getCapital() const
+{
+    return capital;
+}
+
+//Returns median
+int FontMetric::getMedian() const
+{
+    return median;
+}
+
+//Returns baseline
+int FontMetric::getBaseline() const
+{
+    return baseline;
+}
+
+//Returns descender
+int FontMetric::getDescender() const
+{
+    return descender;
+}
+
+//Scales the font metric by given factor
+void FontMetric::scale(const double factor)
+{
+    const int scaledX = std::round(bounds.x * factor);
+    const int scaledY = std::round(bounds.y * factor);
+    const int scaledWidth = std::round(bounds.br().x * factor - bounds.x * factor);
+    const int scaledHeight = std::round(bounds.br().y * factor - bounds.y * factor);
+    bounds = cv::Rect(scaledX, scaledY, scaledWidth, scaledHeight);
+
+    ascender = std::round(ascender * factor);
+    capital = std::round(capital * factor);
+    median = std::round(median * factor);
+
+    baseline = std::round(baseline * factor);
+
+    descender = std::round(descender * factor);
 }
 
 //Returns the number of expected components for each character in text
