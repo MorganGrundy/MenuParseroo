@@ -86,7 +86,6 @@ void OCRGraphicsView::showImage(const Image t_type)
         currentImage = t_type;
     }
 }
-#include "fontmetric.h"
 
 //Sets the level of OCR results that are shown
 void OCRGraphicsView::setOCRLevel(const tesseract::PageIteratorLevel t_level)
@@ -104,7 +103,7 @@ void OCRGraphicsView::setOCRLevel(const tesseract::PageIteratorLevel t_level)
                                                     + "Descender = " + QString::number(result.getDescender()) + "\n"
                                                     + QString::fromStdString(result.getText())));
 
-        int fontSize = static_cast<int>(std::round(result.getAscender()));
+        int fontSize = result.getAscender();
         if (fontSizeFrequency.count(fontSize) == 0)
             fontSizeFrequency[fontSize] = 1;
         else

@@ -45,7 +45,7 @@ FontMetric::FontMetric(const cv::Mat &t_image, const cv::Rect t_bounds, const st
 
     //Get connected components of text
     cv::Mat componentImage(textImage.size(), CV_16U);
-    size_t componentCount = cv::connectedComponents(textImage, componentImage, 8);
+    size_t componentCount = cv::connectedComponents(textImage, componentImage, 8, CV_16U);
 
     //Calculate components per character and expected total
     const std::vector<size_t> charComponentCounts = getExpectedComponentCount();
@@ -65,15 +65,16 @@ FontMetric::FontMetric(const cv::Mat &t_image, const cv::Rect t_bounds, const st
 
     //Get all labels at baseline
     std::vector<bool> baselineLabels(componentCount, false);
-    uchar *labelPtr;
+    unsigned short *componentPtr;
     //Check two pixels above and below baseline
-    for (int y = baseline - 2; y <= baseline + 2; ++y)
+    for (int y = baseline - 2; y <= baseline + 2 && y < componentImage.rows; ++y)
     {
-        labelPtr = componentImage.ptr<uchar>(y);
+        componentPtr = componentImage.ptr<unsigned short>(y);
         for (int x = 0; x < componentImage.cols; ++x)
         {
-            if (labelPtr[x] != 0 && !baselineLabels.at(labelPtr[x]))
-                baselineLabels.at(labelPtr[x]) = true;
+            const size_t component = static_cast<size_t>(componentPtr[x]);
+            if (component != 0 && !baselineLabels.at(component))
+                baselineLabels.at(component) = true;
         }
     }
 
@@ -83,10 +84,10 @@ FontMetric::FontMetric(const cv::Mat &t_image, const cv::Rect t_bounds, const st
         //Find lowest point with a label that touches baseline
         for (int y = bounds.height - 1; y > baseline && descender == 0; ++y)
         {
-            labelPtr = componentImage.ptr<uchar>(y);
+            componentPtr = componentImage.ptr<unsigned short>(y);
             for (int x = 0; x < componentImage.cols; ++x)
             {
-                if (baselineLabels.at(labelPtr[x]))
+                if (baselineLabels.at(componentPtr[x]))
                 {
                     descender = y - baseline;
                     break;
@@ -147,19 +148,22 @@ int FontMetric::getDescender() const
 //Scales the font metric by given factor
 void FontMetric::scale(const double factor)
 {
-    const int scaledX = std::round(bounds.x * factor);
-    const int scaledY = std::round(bounds.y * factor);
-    const int scaledWidth = std::round(bounds.br().x * factor - bounds.x * factor);
-    const int scaledHeight = std::round(bounds.br().y * factor - bounds.y * factor);
-    bounds = cv::Rect(scaledX, scaledY, scaledWidth, scaledHeight);
+    if (factor != 1.0)
+    {
+        const int scaledX = std::round(bounds.x * factor);
+        const int scaledY = std::round(bounds.y * factor);
+        const int scaledWidth = std::round(bounds.br().x * factor - bounds.x * factor);
+        const int scaledHeight = std::round(bounds.br().y * factor - bounds.y * factor);
+        bounds = cv::Rect(scaledX, scaledY, scaledWidth, scaledHeight);
 
-    ascender = std::round(ascender * factor);
-    capital = std::round(capital * factor);
-    median = std::round(median * factor);
+        ascender = std::round(ascender * factor);
+        capital = std::round(capital * factor);
+        median = std::round(median * factor);
 
-    baseline = std::round(baseline * factor);
+        baseline = std::round(baseline * factor);
 
-    descender = std::round(descender * factor);
+        descender = std::round(descender * factor);
+    }
 }
 
 //Returns the number of expected components for each character in text
@@ -199,7 +203,7 @@ FontMetric::mapCharacterComponents(const cv::Mat &componentImage, const size_t c
     {
         for (int y = 0; y < componentImage.rows && currentCharIndex < text.length(); ++y)
         {
-            const uchar component = componentImage.at<uchar>(y, x);
+            const size_t component = static_cast<size_t>(componentImage.at<unsigned short>(y, x));
             if (!componentIsMapped.at(component))
             {
                 //Map component to current character
@@ -212,7 +216,7 @@ FontMetric::mapCharacterComponents(const cv::Mat &componentImage, const size_t c
                 {
                     ++currentCharIndex;
                     //Reached end of text
-                    if (currentCharIndex > text.length())
+                    if (currentCharIndex >= text.length())
                         break;
 
                     currentCharComponentCount = charComponentCounts.at(currentCharIndex);
