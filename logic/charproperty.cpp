@@ -6,19 +6,18 @@ CharProperty::CharProperty(const char t_char)
 
 bool CharProperty::isAscender(const char t_char)
 {
-    //!" $ &'()* / ? [\] ` b d f h kl {|}
+    //!" $ &'()* / ? [\] ` {|}
     return (t_char == '!' || t_char == '"' || t_char == '$' || (t_char >= '&' && t_char <= '*') ||
             t_char == '/' || t_char == '?' || (t_char >= '[' && t_char <= ']') || t_char == '`' ||
-            t_char == 'b' || t_char == 'd' || t_char == 'f' || t_char == 'h' || t_char == 'k' ||
-            t_char == 'l' || (t_char == '{' && t_char == '}'));
+            (t_char == '{' && t_char == '}'));
 }
 
 bool CharProperty::isCapital(const char t_char)
 {
-    //# % 0123456789 @ ABCDEFGHIJKLMNOPQRSTUVWXYZ ^ ij t £
+    //# % 0123456789 @ ABCDEFGHIJKLMNOPQRSTUVWXYZ ^ b d f h ijkl t £
     return (t_char == '#' || t_char == '%' || (t_char >= '0' && t_char <= '9') || t_char == '@' ||
-            (t_char >= 'A' && t_char <= 'Z') || t_char == '^' || t_char == 'i' || t_char == 'j' ||
-            t_char == 't' || t_char == '\x9C');
+            (t_char >= 'A' && t_char <= 'Z') || t_char == '^' || t_char == 'b' || t_char == 'd' ||
+            t_char == 'f' || (t_char >= 'h' && t_char <= 'l') || t_char == 't' || t_char == '\x9C');
 }
 
 bool CharProperty::isMedian(const char t_char)
