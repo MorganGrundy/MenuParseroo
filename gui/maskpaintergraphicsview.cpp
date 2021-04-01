@@ -290,8 +290,7 @@ void MaskPainterGraphicsView::fillConnectedComponent(const QPoint &t_pos, const 
                         currentPixel.y()+1 >= 0 && currentPixel.y()+1 < image.height())
                         pixels.emplace(currentPixel.x(), currentPixel.y()+1);
                 }
-            }
-            while (!pixels.empty());
+            } while (!pixels.empty());
         }
     }
 }

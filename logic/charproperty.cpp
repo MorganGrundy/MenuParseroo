@@ -51,9 +51,9 @@ CharProperty::Top CharProperty::getTop(const char t_char)
 //--------------------------------------------------------------------------------------------------
 bool CharProperty::isFloating(const char t_char)
 {
-    //" ' *+ - = ` ~
+    //" ' *+ - = ^ ` ~
     return (t_char == '"' || t_char == '\'' || t_char == '*' || t_char == '+' || t_char == '-' ||
-            t_char == '=' || t_char == '`' || t_char == '~');
+            t_char == '=' || t_char == '^' || t_char == '`' || t_char == '~');
 }
 
 bool CharProperty::isBaseline(const char t_char)

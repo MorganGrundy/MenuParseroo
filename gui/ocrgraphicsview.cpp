@@ -99,11 +99,12 @@ void OCRGraphicsView::setOCRLevel(const tesseract::PageIteratorLevel t_level)
         fontMetricItems.push_back(new GraphicsFontMetricItem(result));
         scene()->addItem(fontMetricItems.back());
         //Add OCR text to item data, also add ascender and descender of font metrics
-        fontMetricItems.back()->setData(0, QVariant("Ascender = " + QString::number(result.getAscender()) + "\n"
+        fontMetricItems.back()->setData(0, QVariant("Median = " + QString::number(result.getMedian()) + "\n"
+                                                    + "Capital = " + QString::number(result.getCapital()) + "\n"
                                                     + "Descender = " + QString::number(result.getDescender()) + "\n"
                                                     + QString::fromStdString(result.getText())));
 
-        int fontSize = result.getAscender();
+        int fontSize = result.getCapital();
         if (fontSizeFrequency.count(fontSize) == 0)
             fontSizeFrequency[fontSize] = 1;
         else

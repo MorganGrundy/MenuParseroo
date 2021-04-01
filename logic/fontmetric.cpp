@@ -1,6 +1,8 @@
 #include "fontmetric.h"
 
 #include <iostream>
+#include <cctype>
+#include <algorithm>
 
 #include <opencv2/imgproc.hpp>
 
@@ -8,15 +10,29 @@
 
 FontMetric::FontMetric(const cv::Mat &t_image, const cv::Rect t_bounds, const std::string &t_text,
                        const int t_baseline)
-    : bounds{t_bounds}, text{t_text}, baseline{t_baseline}, descender{0}
+    : bounds{t_bounds}, text{t_text}, ascender{0}, capital{0}, median{0}, baseline{t_baseline},
+    descender{0}
 {
     //Baseline must be atleast 2
-    if (baseline < 2)
+    if (baseline < 5)
         throw std::invalid_argument("FontMetric baseline must be atleast 2");
 
     //Get text properties
     for (auto character: text)
         properties.push_back(CharProperty(character));
+
+    //Text must contain alphanumerics
+    bool hasAlphanumerics = false;
+    for (const auto character: text)
+    {
+        if (std::isalnum(character))
+        {
+            hasAlphanumerics = true;
+            break;
+        }
+    }
+    if (!hasAlphanumerics)
+        throw std::invalid_argument("FontMetric text must contain atleast one alphanumeric");
 
     //Find which char property in text
     bool hasAscender = false;
@@ -59,43 +75,77 @@ FontMetric::FontMetric(const cv::Mat &t_image, const cv::Rect t_bounds, const st
             " Actual components:" << componentCount - 1 << "\n";
     }
 
-    //Map characters to components
-    const auto charComponents = mapCharacterComponents(componentImage, componentCount,
-                                                       charComponentCounts);
-
-    //Get all labels at baseline
-    std::vector<bool> baselineLabels(componentCount, false);
+    //Get all components at baseline
+    std::vector<bool> componentAtBaseline(componentCount, false);
     unsigned short *componentPtr;
     //Check two pixels above and below baseline
-    for (int y = baseline - 2; y <= baseline + 2 && y < componentImage.rows; ++y)
+    for (int y = baseline - 5; y <= baseline + 5 && y < componentImage.rows; ++y)
     {
         componentPtr = componentImage.ptr<unsigned short>(y);
         for (int x = 0; x < componentImage.cols; ++x)
         {
             const size_t component = static_cast<size_t>(componentPtr[x]);
-            if (component != 0 && !baselineLabels.at(component))
-                baselineLabels.at(component) = true;
+            if (component != 0 && !componentAtBaseline.at(component))
+                componentAtBaseline.at(component) = true;
+        }
+    }
+
+    //Map characters to components
+    const auto charComponents = mapCharacterComponents(componentImage, componentCount,
+                                                       componentAtBaseline);
+
+    //Calculate median, capital
+    for (size_t i = 0; i < text.length(); ++i)
+    {
+        //Only calculate from alphanumeric characters
+        if (std::isalnum(text.at(i)))
+        {
+            //Find highest point of character component
+            const std::vector<size_t> &components = charComponents.at(i);
+            for (int y = 0; y < baseline && y < componentImage.rows; ++y)
+            {
+                componentPtr = componentImage.ptr<unsigned short>(y);
+                for (int x = 0; x < componentImage.cols; ++x)
+                {
+                    //Check if component belongs to character
+                    if (componentPtr[x] != 0 && std::find(components.cbegin(), components.cend(),
+                                                          componentPtr[x]) != components.cend())
+                    {
+                        switch (properties.at(i).topPosition)
+                        {
+                        case CharProperty::Top::Median:
+                            if (median < (baseline - y))
+                                median = baseline - y;
+                            break;
+                        case CharProperty::Top::Capital:
+                            if (capital < (baseline - y))
+                                capital = baseline - y;
+                            break;
+                        default: std::cerr << __FILE__":" << __LINE__ <<
+                                " Non-alphanumeric character should not be here :(\n";
+                        }
+                    }
+                }
+            }
         }
     }
 
     //Calculate descender
     if (hasDescender)
     {
-        //Find lowest point with a label that touches baseline
+        //Find lowest point with a component that touches baseline
         for (int y = bounds.height - 1; y > baseline && descender == 0; ++y)
         {
             componentPtr = componentImage.ptr<unsigned short>(y);
             for (int x = 0; x < componentImage.cols; ++x)
             {
-                if (baselineLabels.at(componentPtr[x]))
+                if (componentAtBaseline.at(componentPtr[x]))
                 {
                     descender = y - baseline;
                     break;
                 }
             }
         }
-
-        ascender = descender * 2;
     }
     else
     {
@@ -169,7 +219,7 @@ void FontMetric::scale(const double factor)
 //Returns the number of expected components for each character in text
 std::vector<size_t> FontMetric::getExpectedComponentCount()
 {
-    std::vector<size_t> charComponents(text.length(), 0);
+    std::vector<size_t> charComponents(text.length(), 1);
 
     for (size_t i = 0; i < text.length(); ++i)
     {
@@ -180,8 +230,6 @@ std::vector<size_t> FontMetric::getExpectedComponentCount()
         else if (text.at(i) == '!' || text.at(i) == '"' || text.at(i) == ':' || text.at(i) == ';' ||
                  text.at(i) == '=' || text.at(i) == '?' || text.at(i) == 'i' || text.at(i) == 'j')
             charComponents.at(i) = 2;
-        else
-            charComponents.at(i) = 1;
     }
 
     return charComponents;
@@ -190,37 +238,44 @@ std::vector<size_t> FontMetric::getExpectedComponentCount()
 //Returns for each character in text the components that belong to it
 std::vector<std::vector<size_t>>
 FontMetric::mapCharacterComponents(const cv::Mat &componentImage, const size_t componentCount,
-                                   const std::vector<size_t> &charComponentCounts)
+                                   const std::vector<bool> &componentAtBaseline)
 {
     std::vector<std::vector<size_t>> characterComponents(text.length());
 
+    //Select first non-floating character
     size_t currentCharIndex = 0;
-    size_t currentCharComponentCount = charComponentCounts.at(0);
+    while (currentCharIndex < text.length() && properties.at(currentCharIndex).bottomPosition ==
+                                                   CharProperty::Bottom::Floating)
+           ++currentCharIndex;
 
     std::vector<bool> componentIsMapped(componentCount, false);
-    //Iterate columns mapping components to characters
+    //Iterate columns mapping components to characters (only rows close to baseline)
     for (int x = 0; x < componentImage.cols && currentCharIndex < text.length(); ++x)
     {
-        for (int y = 0; y < componentImage.rows && currentCharIndex < text.length(); ++y)
+        for (int y = baseline - 5; y <= baseline + 5 && y < componentImage.rows; ++y)
         {
             const size_t component = static_cast<size_t>(componentImage.at<unsigned short>(y, x));
-            if (!componentIsMapped.at(component))
+            if (!componentIsMapped.at(component) && componentAtBaseline.at(component))
             {
                 //Map component to current character
                 characterComponents.at(currentCharIndex).push_back(component);
                 componentIsMapped.at(component) = true;
 
-                --currentCharComponentCount;
-                //If all character components are mapped move to next character
-                if (currentCharComponentCount == 0)
+                //Find component above (representing the dot of i or j) and map to character
+                if (text.at(currentCharIndex) == 'i' || text.at(currentCharIndex == 'j'))
+                {
+
+                }
+
+                //Select next non-floating character
+                do
                 {
                     ++currentCharIndex;
-                    //Reached end of text
-                    if (currentCharIndex >= text.length())
-                        break;
+                } while (currentCharIndex < text.length() &&
+                         properties.at(currentCharIndex).bottomPosition ==
+                             CharProperty::Bottom::Floating);
 
-                    currentCharComponentCount = charComponentCounts.at(currentCharIndex);
-                }
+                break;
             }
         }
     }

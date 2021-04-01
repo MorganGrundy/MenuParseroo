@@ -99,7 +99,10 @@ void MultiscaleOCR::OCR()
                     int base_x1, base_y1, base_x2, base_y2;
                     tess_ri->Baseline(tesseract::RIL_WORD, &base_x1, &base_y1, &base_x2, &base_y2);
 
-                    //try
+                    if (y2 - y1 < 20 || x2 - x1 < 10)
+                        continue;
+
+                    try
                     {
                         FontMetric metric(scaledIm, cv::Rect(x1, y1, x2 - x1, y2 - y1),
                                           std::string(tess_ri->GetUTF8Text(tesseract::RIL_WORD)),
@@ -107,17 +110,18 @@ void MultiscaleOCR::OCR()
 
                         //if (metric.getAscender() > 25 && metric.getAscender() < 40)
                         {
+                            //std::cerr << "Median before = " << metric.getMedian() << "\n";
                             metric.scale(actualScales.at(i));
+                            //std::cerr << "Median after = " << metric.getMedian() << "\n";
                             results.push_back(metric);
                         }
                     }
-                    /*catch (const std::exception &e)
+                    catch (const std::exception &e)
                     {
                         std::cerr << e.what() << "\n";
-                    }*/
+                    }
                 }
-            }
-            while((tess_ri->Next(tesseract::RIL_WORD)));
+            } while((tess_ri->Next(tesseract::RIL_WORD)));
         }
     }
 }
