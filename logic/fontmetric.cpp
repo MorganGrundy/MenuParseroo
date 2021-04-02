@@ -34,28 +34,6 @@ FontMetric::FontMetric(const cv::Mat &t_image, const cv::Rect t_bounds, const st
     if (!hasAlphanumerics)
         throw std::invalid_argument("FontMetric text must contain atleast one alphanumeric");
 
-    //Find which char property in text
-    bool hasAscender = false;
-    bool hasCapital = false;
-    bool hasMedian = false;
-    //
-    bool hasBaseline = false;
-    bool hasDescender = false;
-    for (const CharProperty property: properties)
-    {
-        if (property.topPosition == CharProperty::Top::Ascender)
-            hasAscender = true;
-        else if (property.topPosition == CharProperty::Top::Capital)
-            hasCapital = true;
-        else if (property.topPosition == CharProperty::Top::Median)
-            hasMedian = true;
-
-        if (property.bottomPosition == CharProperty::Bottom::Baseline)
-            hasBaseline = true;
-        else if (property.bottomPosition == CharProperty::Bottom::Descender)
-            hasDescender = true;
-    }
-
     //Image bounded to text
     const cv::Mat textImage = t_image(bounds);
 
@@ -94,22 +72,24 @@ FontMetric::FontMetric(const cv::Mat &t_image, const cv::Rect t_bounds, const st
     const auto charComponents = mapCharacterComponents(componentImage, componentCount,
                                                        componentAtBaseline);
 
-    //Calculate median, capital
+    //Calculate median, capital, and descender
     for (size_t i = 0; i < text.length(); ++i)
     {
+        const std::vector<size_t> &components = charComponents.at(i);
+
+        //Median and capital
         //Only calculate from alphanumeric characters
         if (std::isalnum(text.at(i)))
         {
-            //Find highest point of character component
-            const std::vector<size_t> &components = charComponents.at(i);
+            //Find highest point of character component for median/capital
             for (int y = 0; y < baseline && y < componentImage.rows; ++y)
             {
                 componentPtr = componentImage.ptr<unsigned short>(y);
                 for (int x = 0; x < componentImage.cols; ++x)
                 {
                     //Check if component belongs to character
-                    if (componentPtr[x] != 0 && std::find(components.cbegin(), components.cend(),
-                                                          componentPtr[x]) != components.cend())
+                    if (std::find(components.cbegin(), components.cend(),
+                                  componentPtr[x]) != components.cend())
                     {
                         switch (properties.at(i).topPosition)
                         {
@@ -128,28 +108,26 @@ FontMetric::FontMetric(const cv::Mat &t_image, const cv::Rect t_bounds, const st
                 }
             }
         }
-    }
 
-    //Calculate descender
-    if (hasDescender)
-    {
-        //Find lowest point with a component that touches baseline
-        for (int y = bounds.height - 1; y > baseline && descender == 0; ++y)
+        //Descender
+        if (properties.at(i).bottomPosition == CharProperty::Bottom::Descender)
         {
-            componentPtr = componentImage.ptr<unsigned short>(y);
-            for (int x = 0; x < componentImage.cols; ++x)
+            //Find lowest point of character component for descender
+            for (int y = componentImage.rows - 1; y > baseline; ++y)
             {
-                if (componentAtBaseline.at(componentPtr[x]))
+                componentPtr = componentImage.ptr<unsigned short>(y);
+                for (int x = 0; x < componentImage.cols; ++x)
                 {
-                    descender = y - baseline;
-                    break;
+                    //Check if component belongs to character
+                    if (std::find(components.cbegin(), components.cend(),
+                                  componentPtr[x]) != components.cend())
+                    {
+                        if (descender < (y - baseline))
+                            descender = y - baseline;
+                    }
                 }
             }
         }
-    }
-    else
-    {
-        //Guess descender
     }
 }
 

@@ -101,6 +101,7 @@ void OCRGraphicsView::setOCRLevel(const tesseract::PageIteratorLevel t_level)
         //Add OCR text to item data, also add ascender and descender of font metrics
         fontMetricItems.back()->setData(0, QVariant("Median = " + QString::number(result.getMedian()) + "\n"
                                                     + "Capital = " + QString::number(result.getCapital()) + "\n"
+                                                    + "Ascender = " + QString::number(result.getAscender()) + "\n"
                                                     + "Descender = " + QString::number(result.getDescender()) + "\n"
                                                     + QString::fromStdString(result.getText())));
 
