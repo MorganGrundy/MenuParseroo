@@ -113,7 +113,7 @@ FontMetric::FontMetric(const cv::Mat &t_image, const cv::Rect t_bounds, const st
         if (properties.at(i).bottomPosition == CharProperty::Bottom::Descender)
         {
             //Find lowest point of character component for descender
-            for (int y = componentImage.rows - 1; y > baseline; ++y)
+            for (int y = componentImage.rows - 1; y > baseline; --y)
             {
                 componentPtr = componentImage.ptr<unsigned short>(y);
                 for (int x = 0; x < componentImage.cols; ++x)
