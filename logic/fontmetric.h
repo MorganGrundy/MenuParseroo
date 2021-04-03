@@ -58,7 +58,8 @@ private:
 
     //Returns for each character in text the components that belong to it
     std::vector<std::vector<size_t>>
-    mapCharacterComponents(const cv::Mat &componentImage, const size_t componentCount,
+    mapCharacterComponents(const cv::Mat &componentImage,
+                           const std::vector<bool> &componentIsForeground,
                            const std::vector<bool> &componentAtBaseline);
 };
 

@@ -92,9 +92,12 @@ void OCRGraphicsView::setOCRLevel(const tesseract::PageIteratorLevel t_level)
 {
     clearFontMetricItems();
 
+    std::map<double, size_t> medianCapitalFrequency;
     std::map<int, int> fontSizeFrequency;
     for (const auto &result: tessOCR)
     {
+        //if (result.getCapital() <= result.getMedian())
+        {
         //Add font metric item to scene
         fontMetricItems.push_back(new GraphicsFontMetricItem(result));
         scene()->addItem(fontMetricItems.back());
@@ -104,16 +107,26 @@ void OCRGraphicsView::setOCRLevel(const tesseract::PageIteratorLevel t_level)
                                                     + "Ascender = " + QString::number(result.getAscender()) + "\n"
                                                     + "Descender = " + QString::number(result.getDescender()) + "\n"
                                                     + QString::fromStdString(result.getText())));
+        }
 
         int fontSize = result.getCapital();
         if (fontSizeFrequency.count(fontSize) == 0)
             fontSizeFrequency[fontSize] = 1;
         else
             ++fontSizeFrequency.at(fontSize);
+
+        if (result.getMedian() != 0 && result.getCapital() != 0)
+        {
+            double medianCapital = static_cast<double>(result.getMedian()) / static_cast<double>(result.getCapital());
+            if (medianCapitalFrequency.count(medianCapital) == 0)
+                medianCapitalFrequency[medianCapital] = 1;
+            else
+                ++medianCapitalFrequency.at(medianCapital);
+        }
     }
 
     QString fontSizeFreqStr = "";
-    for (auto it: fontSizeFrequency)
+    for (auto it: medianCapitalFrequency)
         fontSizeFreqStr += QString::number(it.first) + " = " + QString::number(it.second) + "\n";
     emit textBoundClicked(fontSizeFreqStr);
 

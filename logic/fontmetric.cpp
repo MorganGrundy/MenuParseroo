@@ -35,7 +35,8 @@ FontMetric::FontMetric(const cv::Mat &t_image, const cv::Rect t_bounds, const st
         throw std::invalid_argument("FontMetric text must contain atleast one alphanumeric");
 
     //Image bounded to text
-    const cv::Mat textImage = t_image(bounds);
+    cv::Mat textImage;
+    cv::bitwise_not(t_image(bounds), textImage);
 
     //Get connected components of text
     cv::Mat componentImage(textImage.size(), CV_16U);
@@ -46,16 +47,32 @@ FontMetric::FontMetric(const cv::Mat &t_image, const cv::Rect t_bounds, const st
     const size_t expectedComponents = std::accumulate(charComponentCounts.cbegin(),
                                                       charComponentCounts.cend(), size_t(0));
 
+    //Get all foreground components
+    std::vector<bool> componentIsForeground(componentCount, false);
+    unsigned short *componentPtr;
+    const uchar *textPtr;
+    for (int y = 0; y < componentImage.rows; ++y)
+    {
+        componentPtr = componentImage.ptr<unsigned short>(y);
+        textPtr = textImage.ptr<uchar>(y);
+        for (int x = 0; x < componentImage.cols; ++x)
+        {
+            if (textPtr[x] != 0 && !componentIsForeground.at(componentPtr[x]))
+                componentIsForeground.at(componentPtr[x]) = true;
+        }
+    }
+    const size_t foregroundComponentCount = std::count(componentIsForeground.cbegin(),
+                                                       componentIsForeground.cend(), true);
+
     //If we have the expected number of components then getting font metrics is easier :D
-    if (expectedComponents != (componentCount - 1))
+    if (expectedComponents != foregroundComponentCount)
     {
         std::cerr << __FILE__":" << __LINE__ << " - Expected components:" << expectedComponents <<
-            " Actual components:" << componentCount - 1 << "\n";
+            " Actual components:" << foregroundComponentCount << "\n";
     }
 
     //Get all components at baseline
     std::vector<bool> componentAtBaseline(componentCount, false);
-    unsigned short *componentPtr;
     //Check two pixels above and below baseline
     for (int y = baseline - 5; y <= baseline + 5 && y < componentImage.rows; ++y)
     {
@@ -63,13 +80,13 @@ FontMetric::FontMetric(const cv::Mat &t_image, const cv::Rect t_bounds, const st
         for (int x = 0; x < componentImage.cols; ++x)
         {
             const size_t component = static_cast<size_t>(componentPtr[x]);
-            if (component != 0 && !componentAtBaseline.at(component))
+            if (componentIsForeground.at(component) && !componentAtBaseline.at(component))
                 componentAtBaseline.at(component) = true;
         }
     }
 
     //Map characters to components
-    const auto charComponents = mapCharacterComponents(componentImage, componentCount,
+    const auto charComponents = mapCharacterComponents(componentImage, componentIsForeground,
                                                        componentAtBaseline);
 
     //Calculate median, capital, and descender
@@ -129,6 +146,10 @@ FontMetric::FontMetric(const cv::Mat &t_image, const cv::Rect t_bounds, const st
             }
         }
     }
+
+    bounds.y = (bounds.y + baseline) - std::max(capital, baseline);
+    baseline = std::max(capital, baseline);
+    bounds.height = baseline + descender;
 }
 
 //Returns bounds of text
@@ -215,7 +236,8 @@ std::vector<size_t> FontMetric::getExpectedComponentCount()
 
 //Returns for each character in text the components that belong to it
 std::vector<std::vector<size_t>>
-FontMetric::mapCharacterComponents(const cv::Mat &componentImage, const size_t componentCount,
+FontMetric::mapCharacterComponents(const cv::Mat &componentImage,
+                                   const std::vector<bool> &componentIsForeground,
                                    const std::vector<bool> &componentAtBaseline)
 {
     std::vector<std::vector<size_t>> characterComponents(text.length());
@@ -226,14 +248,15 @@ FontMetric::mapCharacterComponents(const cv::Mat &componentImage, const size_t c
                                                    CharProperty::Bottom::Floating)
            ++currentCharIndex;
 
-    std::vector<bool> componentIsMapped(componentCount, false);
+    std::vector<bool> componentIsMapped(componentAtBaseline.size(), false);
     //Iterate columns mapping components to characters (only rows close to baseline)
     for (int x = 0; x < componentImage.cols && currentCharIndex < text.length(); ++x)
     {
         for (int y = baseline - 5; y <= baseline + 5 && y < componentImage.rows; ++y)
         {
             const size_t component = static_cast<size_t>(componentImage.at<unsigned short>(y, x));
-            if (!componentIsMapped.at(component) && componentAtBaseline.at(component))
+            if (componentIsForeground.at(component) && componentAtBaseline.at(component) &&
+                !componentIsMapped.at(component))
             {
                 //Map component to current character
                 characterComponents.at(currentCharIndex).push_back(component);
