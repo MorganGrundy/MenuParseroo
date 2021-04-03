@@ -37,6 +37,9 @@ public:
     void scale(const double factor);
 
 private:
+    //The pixel range from the baseline that a component must be in to be considered at the baseline
+    static const int BASELINE_RANGE = 5;
+
     //Bounds of text in image
     cv::Rect bounds;
 
@@ -58,7 +61,7 @@ private:
 
     //Returns for each character in text the components that belong to it
     std::vector<std::vector<size_t>>
-    mapCharacterComponents(const cv::Mat &componentImage,
+    mapCharacterComponents(const cv::Mat &stats,
                            const std::vector<bool> &componentIsForeground,
                            const std::vector<bool> &componentAtBaseline);
 };
