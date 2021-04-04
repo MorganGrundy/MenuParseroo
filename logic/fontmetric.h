@@ -59,6 +59,18 @@ private:
     //Returns the number of expected components for each character in text
     std::vector<size_t> getExpectedComponentCount();
 
+    //Returns which components are in the foreground
+    std::vector<bool> getForegroundComponents(const cv::Mat &componentImage,
+                                              const cv::Mat &textImage,
+                                              const size_t componentCount);
+
+    //Returns which components are at the baseline
+    std::vector<bool> getBaselineComponents(const cv::Mat &stats,
+                                            const std::vector<bool> &componentIsForeground);
+
+    //Returns the maximum area of components
+    int getMaxArea(const cv::Mat &stats, const std::vector<bool> &componentIsForeground);
+
     //Returns for each character in text the components that belong to it
     std::vector<std::vector<size_t>>
     mapCharacterComponents(const cv::Mat &stats,

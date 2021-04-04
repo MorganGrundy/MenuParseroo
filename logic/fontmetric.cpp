@@ -3,6 +3,7 @@
 #include <iostream>
 #include <cctype>
 #include <algorithm>
+#include <execution>
 
 #include <opencv2/imgproc.hpp>
 
@@ -13,7 +14,7 @@ FontMetric::FontMetric(const cv::Mat &t_image, const cv::Rect t_bounds, const st
     : bounds{t_bounds}, text{t_text}, ascender{0}, capital{0}, median{0}, baseline{t_baseline},
     descender{0}
 {
-    //Minimum baseline
+    //Enforce minimum baseline
     if (baseline < BASELINE_RANGE)
         throw std::invalid_argument("FontMetric baseline must be atleast "
                                     + std::to_string(BASELINE_RANGE));
@@ -37,23 +38,13 @@ FontMetric::FontMetric(const cv::Mat &t_image, const cv::Rect t_bounds, const st
 
     //Calculate components per character and expected total
     const std::vector<size_t> charComponentCounts = getExpectedComponentCount();
-    const size_t expectedComponents = std::accumulate(charComponentCounts.cbegin(),
-                                                      charComponentCounts.cend(), 0);
+    const size_t expectedComponents = std::reduce(std::execution::par_unseq,
+                                                  charComponentCounts.cbegin(),
+                                                  charComponentCounts.cend(), 0);
 
     //Get all foreground components
-    std::vector<bool> componentIsForeground(componentCount, false);
-    unsigned short *componentPtr;
-    const uchar *textPtr;
-    for (int y = 0; y < componentImage.rows; ++y)
-    {
-        componentPtr = componentImage.ptr<unsigned short>(y);
-        textPtr = textImage.ptr<uchar>(y);
-        for (int x = 0; x < componentImage.cols; ++x)
-        {
-            if (textPtr[x] != 0 && !componentIsForeground.at(componentPtr[x]))
-                componentIsForeground.at(componentPtr[x]) = true;
-        }
-    }
+    std::vector<bool> componentIsForeground = getForegroundComponents(componentImage, textImage,
+                                                                      componentCount);
     const size_t foregroundComponentCount = std::count(componentIsForeground.cbegin(),
                                                        componentIsForeground.cend(), true);
 
@@ -65,19 +56,7 @@ FontMetric::FontMetric(const cv::Mat &t_image, const cv::Rect t_bounds, const st
     }
 
     //Get all components at baseline
-    std::vector<bool> componentAtBaseline(componentCount, false);
-    for (size_t component = 0; component < componentCount; ++component)
-    {
-        const int top = stats.at<int>(static_cast<int>(component), cv::CC_STAT_TOP);
-        const int bottom = top + stats.at<int>(static_cast<int>(component), cv::CC_STAT_HEIGHT);
-
-        if (componentIsForeground.at(component) &&
-            top < (baseline + BASELINE_RANGE) &&
-            bottom > (baseline - BASELINE_RANGE))
-        {
-            componentAtBaseline.at(component) = true;
-        }
-    }
+    std::vector<bool> componentAtBaseline = getBaselineComponents(stats, componentIsForeground);
 
     //Map characters to components
     const auto charComponents = mapCharacterComponents(stats, componentIsForeground,
@@ -94,7 +73,7 @@ FontMetric::FontMetric(const cv::Mat &t_image, const cv::Rect t_bounds, const st
         {
             for (const auto component: components)
             {
-                const int top = stats.at<int>(component, cv::CC_STAT_TOP);
+                const int top = stats.at<int>(static_cast<int>(component), cv::CC_STAT_TOP);
                 switch (properties.at(i).topPosition)
                 {
                 case CharProperty::Top::Median:
@@ -213,18 +192,80 @@ std::vector<size_t> FontMetric::getExpectedComponentCount()
     return charComponents;
 }
 
+//Returns which components are in the foreground
+std::vector<bool> FontMetric::getForegroundComponents(const cv::Mat &componentImage,
+                                                      const cv::Mat &textImage,
+                                                      const size_t componentCount)
+{
+    std::vector<bool> componentIsForeground(componentCount, false);
+
+    const ushort *componentPtr;
+    const uchar *textPtr;
+    for (int y = 0; y < componentImage.rows; ++y)
+    {
+        componentPtr = componentImage.ptr<ushort>(y);
+        textPtr = textImage.ptr<uchar>(y);
+        for (int x = 0; x < componentImage.cols; ++x)
+        {
+            if (textPtr[x] != 0 && !componentIsForeground.at(componentPtr[x]))
+                componentIsForeground.at(componentPtr[x]) = true;
+        }
+    }
+
+    return componentIsForeground;
+}
+
+//Returns which components are at the baseline
+std::vector<bool> FontMetric::getBaselineComponents(const cv::Mat &stats,
+                                                    const std::vector<bool> &componentIsForeground)
+{
+    std::vector<bool> componentAtBaseline(componentIsForeground.size(), false);
+    for (size_t component = 0; component < componentIsForeground.size(); ++component)
+    {
+        const int top = stats.at<int>(static_cast<int>(component), cv::CC_STAT_TOP);
+        const int bottom = top + stats.at<int>(static_cast<int>(component), cv::CC_STAT_HEIGHT);
+
+        if (componentIsForeground.at(component) &&
+            top < (baseline + BASELINE_RANGE) &&
+            bottom > (baseline - BASELINE_RANGE))
+        {
+            componentAtBaseline.at(component) = true;
+        }
+    }
+
+    return componentAtBaseline;
+}
+
+//Returns the maximum area of components
+int FontMetric::getMaxArea(const cv::Mat &stats, const std::vector<bool> &componentIsForeground)
+{
+    int maxArea = 0;
+    for (size_t component = 0; component < componentIsForeground.size(); ++component)
+    {
+        if (componentIsForeground.at(component))
+        {
+            if (stats.at<int>(component, cv::CC_STAT_AREA) > maxArea)
+                maxArea = stats.at<int>(component, cv::CC_STAT_AREA);
+        }
+    }
+
+    return maxArea;
+}
+
 //Returns for each character in text the components that belong to it
 std::vector<std::vector<size_t>>
 FontMetric::mapCharacterComponents(const cv::Mat &stats,
                                    const std::vector<bool> &componentIsForeground,
                                    const std::vector<bool> &componentAtBaseline)
 {
+    const int areaThreshold = std::round(getMaxArea(stats, componentIsForeground) * 0.05);
+
     std::vector<std::vector<size_t>> characterComponents(text.length());
 
     //Select first non-floating character
     size_t currentCharIndex = 0;
-    while (currentCharIndex < text.length() && properties.at(currentCharIndex).bottomPosition
-                                                   == CharProperty::Bottom::Floating)
+    while (currentCharIndex < text.length()
+           && properties.at(currentCharIndex).bottomPosition == CharProperty::Bottom::Floating)
     {
            ++currentCharIndex;
     }
@@ -243,7 +284,8 @@ FontMetric::mapCharacterComponents(const cv::Mat &stats,
     //Map components to characters
     for (const auto component: sortedComponentsLeft)
     {
-        if (componentIsForeground.at(component) && componentAtBaseline.at(component))
+        if (stats.at<int>(component, cv::CC_STAT_AREA) > areaThreshold
+            && componentIsForeground.at(component) && componentAtBaseline.at(component))
         {
             //Map component to current character
             characterComponents.at(currentCharIndex).push_back(component);
