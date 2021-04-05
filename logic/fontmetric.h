@@ -40,6 +40,13 @@ private:
     //The pixel range from the baseline that a component must be in to be considered at the baseline
     static const int BASELINE_RANGE = 5;
 
+    //The ratios between median and capital to use as fallback if only one value is calculated
+    static constexpr double MEDIAN_CAPITAL_RATIO = 50.0 / 66.0;
+    static constexpr double CAPITAL_MEDIAN_RATIO = 66.0 / 50.0;
+    //The ratios between capital/median and descender to use as fallback if descender not calculated
+    static constexpr double DESCENDER_CAPITAL_RATIO = 16.0 / 66.0;
+    static constexpr double DESCENDER_MEDIAN_RATIO = 16.0 / 50.0;
+
     //Bounds of text in image
     cv::Rect bounds;
 

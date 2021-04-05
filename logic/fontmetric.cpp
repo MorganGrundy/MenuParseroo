@@ -104,9 +104,23 @@ FontMetric::FontMetric(const cv::Mat &t_image, const cv::Rect t_bounds, const st
         }
     }
 
+    //Create estimate of median from capital
+    if (median == 0 && capital != 0)
+        median = std::round(capital * MEDIAN_CAPITAL_RATIO);
+    //Create estimate of capital from median
+    else if (capital == 0 && median != 0)
+        capital = std::round(median * CAPITAL_MEDIAN_RATIO);
+
+    //Create estimate of descender from capital
+    if (descender == 0 && capital != 0)
+        descender = std::round(capital * DESCENDER_CAPITAL_RATIO);
+    //Create estimate of descender from median
+    else if (descender == 0 && median != 0)
+        descender = std::round(median * DESCENDER_MEDIAN_RATIO);
+
     //Update bounds
-    bounds.y = (bounds.y + baseline) - std::max(capital, baseline);
-    baseline = std::max(capital, baseline);
+    bounds.y = (bounds.y + baseline) - capital;
+    baseline = capital;
     bounds.height = baseline + descender;
 }
 

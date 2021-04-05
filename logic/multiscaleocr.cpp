@@ -99,7 +99,7 @@ void MultiscaleOCR::OCR()
                     int base_x1, base_y1, base_x2, base_y2;
                     tess_ri->Baseline(tesseract::RIL_WORD, &base_x1, &base_y1, &base_x2, &base_y2);
 
-                    if (y2 - y1 < 20 || x2 - x1 < 10)
+                    if (y2 - y1 < 25 || x2 - x1 < 10)
                         continue;
 
                     try
