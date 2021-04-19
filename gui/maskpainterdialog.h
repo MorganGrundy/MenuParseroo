@@ -5,27 +5,28 @@
 #include <QImage>
 #include <QShowEvent>
 
-namespace Ui {
-class MaskPainterDialog;
+namespace Ui
+{
+	class MaskPainterDialog;
 }
 
 class MaskPainterDialog : public QDialog
 {
-    Q_OBJECT
+	Q_OBJECT
 
 public:
-    explicit MaskPainterDialog(const QImage &t_image, QWidget *parent = nullptr);
-    ~MaskPainterDialog();
+	explicit MaskPainterDialog(const QImage &t_image, QWidget *parent = nullptr);
+	~MaskPainterDialog();
 
-    //Returns resulting image with mask
-    QImage getImage();
+	//Returns resulting image with mask
+	QImage getImage();
 
 protected:
-    //Resizes graphics scene to fit in view
-    void showEvent(QShowEvent *event) override;
+	//Resizes graphics scene to fit in view
+	void showEvent(QShowEvent *event) override;
 
 private:
-    Ui::MaskPainterDialog *ui;
+	Ui::MaskPainterDialog *ui;
 };
 
 #endif // MASKPAINTERDIALOG_H

@@ -1,0 +1,10 @@
+--- logic/tesseracthelper.cpp
++++ logic/tesseracthelper.cpp
+@@ -1,7 +0,0 @@
+-#include "tesseracthelper.h"
+-
+-TesseractHelper::TesseractHelper()
+-{
+-
+-}
+-

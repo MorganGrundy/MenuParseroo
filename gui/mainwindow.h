@@ -16,29 +16,29 @@ QT_END_NAMESPACE
 
 class MainWindow : public QMainWindow
 {
-    Q_OBJECT
+	Q_OBJECT
 
 public:
-    MainWindow(QWidget *parent = nullptr);
-    ~MainWindow();
+	MainWindow(QWidget *parent = nullptr);
+	~MainWindow();
 
 public slots:
-    //Prompts user for image
-    void loadImage();
+	//Prompts user for image
+	void loadImage();
 
-    //Sets threshold for thresholding image
-    void setThreshold(const int threshold);
+	//Sets threshold for thresholding image
+	void setThreshold(const int threshold);
 
-    //Changes displayed level of OCR
-    void OCRLevelChanged(const QString);
+	//Changes displayed level of OCR
+	void OCRLevelChanged(const QString);
 
-    //Displayed image choice changed
-    void imageChoiceChanged(QAbstractButton *button);
+	//Displayed image choice changed
+	void imageChoiceChanged(QAbstractButton *button);
 
-    //Modifies text from OCR
-    void textChanged();
+	//Modifies text from OCR
+	void textChanged();
 
 private:
-    Ui::MainWindow *ui;
+	Ui::MainWindow *ui;
 };
 #endif // MAINWINDOW_H
