@@ -22,12 +22,6 @@ public:
 	//Performs OCR on all scales
 	void OCR();
 
-	//Return number of scales
-	size_t size() const;
-
-	//Returns scale
-	double getScale(const size_t i) const;
-
 	//Clears results
 	void clear();
 
@@ -37,18 +31,18 @@ public:
 	std::vector<FontMetric>::const_iterator end() const;
 
 private:
-	//Target scales at which to perform OCR
-	std::vector<double> targetScales;
-	//Actual scales at which OCR is performed (The image might not be scaled exactly)
-	std::vector<double> actualScales;
-
 	//The image to OCR
 	cv::Mat image;
 
-	//Tesseract api
+	//Tesseract API
 	tesseract::TessBaseAPI tess_api;
 	//Tesseract results
 	std::vector<FontMetric> results;
+
+	//------------------------------------------------------------------------
+	//Returns the row of the baseline and median
+	//Assumes roi to be a horizontal gaussian blur of a single line of text
+	std::pair<int, int> getBaselineAndMedianRows(const cv::Mat &roi) const;
 };
 
 #endif // MULTISCALEOCR_H

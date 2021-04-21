@@ -95,28 +95,28 @@ void OCRGraphicsView::setOCRLevel(const tesseract::PageIteratorLevel t_level)
 	std::map<int, int> fontSizeFrequency;
 	for (const auto &result : tessOCR)
 	{
-		//if (result.getCapital() <= result.getMedian())
+		//if (result.getCapHeight() <= result.getXHeight())
 		{
 			//Add font metric item to scene
 			fontMetricItems.push_back(new GraphicsFontMetricItem(result));
 			scene()->addItem(fontMetricItems.back());
 			//Add OCR text to item data, also add ascender and descender of font metrics
-			fontMetricItems.back()->setData(0, QVariant("Median = " + QString::number(result.getMedian()) + "\n"
-				+ "Capital = " + QString::number(result.getCapital()) + "\n"
-				+ "Ascender = " + QString::number(result.getAscender()) + "\n"
-				+ "Descender = " + QString::number(result.getDescender()) + "\n"
+			fontMetricItems.back()->setData(0, QVariant("Median = " + QString::number(result.getXHeight()) + "\n"
+				+ "Capital = " + QString::number(result.getCapHeight()) + "\n"
+				+ "Ascender = " + QString::number(result.getAscent()) + "\n"
+				+ "Descender = " + QString::number(result.getDescent()) + "\n"
 				+ QString::fromStdString(result.getText())));
 		}
 
-		int fontSize = result.getCapital();
+		int fontSize = result.getCapHeight();
 		if (fontSizeFrequency.count(fontSize) == 0)
 			fontSizeFrequency[fontSize] = 1;
 		else
 			++fontSizeFrequency.at(fontSize);
 
-		if (result.getMedian() != 0 && result.getCapital() != 0)
+		if (result.getXHeight() != 0 && result.getCapHeight() != 0)
 		{
-			double medianCapital = static_cast<double>(result.getMedian()) / static_cast<double>(result.getCapital());
+			double medianCapital = static_cast<double>(result.getXHeight()) / static_cast<double>(result.getCapHeight());
 			if (medianCapitalFrequency.count(medianCapital) == 0)
 				medianCapitalFrequency[medianCapital] = 1;
 			else
@@ -125,7 +125,7 @@ void OCRGraphicsView::setOCRLevel(const tesseract::PageIteratorLevel t_level)
 	}
 
 	QString fontSizeFreqStr = "";
-	for (auto it : medianCapitalFrequency)
+	for (const auto &it : medianCapitalFrequency)
 		fontSizeFreqStr += QString::number(it.first) + " = " + QString::number(it.second) + "\n";
 	emit textBoundClicked(fontSizeFreqStr);
 

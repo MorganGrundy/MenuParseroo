@@ -11,13 +11,12 @@
 
 FontMetric::FontMetric(const cv::Mat &t_image, const cv::Rect t_bounds, const std::string &t_text,
 	const int t_baseline)
-	: bounds{ t_bounds }, text{ t_text }, ascender{ 0 }, capital{ 0 }, median{ 0 }, baseline{ t_baseline },
-	descender{ 0 }
+	: bounds{ t_bounds }, text{ t_text }, ascent{ 0 }, capHeight{ 0 }, xHeight{ 0 }, baseline{ t_baseline },
+	descent{ 0 }
 {
 	//Enforce minimum baseline
 	if (baseline < BASELINE_RANGE)
-		throw std::invalid_argument("FontMetric baseline must be atleast "
-			+ std::to_string(BASELINE_RANGE));
+		throw std::invalid_argument("FontMetric baseline must be at least " + std::to_string(BASELINE_RANGE));
 
 	//Get text properties
 	for (auto character : text)
@@ -25,103 +24,72 @@ FontMetric::FontMetric(const cv::Mat &t_image, const cv::Rect t_bounds, const st
 
 	//Text must contain alphanumerics
 	if (!std::any_of(text.cbegin(), text.cend(), [](const char c) {return std::isalnum(c); }))
-		throw std::invalid_argument("FontMetric text must contain atleast one alphanumeric");
+		throw std::invalid_argument("FontMetric text must contain at least one alphanumeric");
 
-	//Invert image of text
-	cv::Mat textImage;
-	cv::bitwise_not(t_image(bounds), textImage);
+	//Calculate row mass (sum of blurred rows)
+	cv::Mat rowMasses;
+	cv::reduce(t_image, rowMasses, 1, cv::ReduceTypes::REDUCE_SUM, CV_32S);
+	//Calculate average row mass
+	const double averageRowMass = cv::sum(rowMasses)[0] / bounds.height;
 
-	//Get connected components, stats, and centroids of text
-	cv::Mat componentImage, stats, centroids;
-	const size_t componentCount = cv::connectedComponentsWithStats(textImage, componentImage,
-		stats, centroids, 8, CV_16U);
-
-	//Calculate components per character and expected total
-	const std::vector<size_t> charComponentCounts = getExpectedComponentCount();
-	const size_t expectedComponents = std::reduce(std::execution::par_unseq,
-		charComponentCounts.cbegin(),
-		charComponentCounts.cend(), 0);
-
-	//Get all foreground components
-	std::vector<bool> componentIsForeground = getForegroundComponents(componentImage, textImage,
-		componentCount);
-	const size_t foregroundComponentCount = std::count(componentIsForeground.cbegin(),
-		componentIsForeground.cend(), true);
-
-	//If we have the expected number of components then getting font metrics is easier :D
-	if (expectedComponents != foregroundComponentCount)
+	//Find row corresponding to the text baseline
+	//The last row with a mass exceeding the average is assumed to be the baseline
+	int baselineRow = -1;
+	for (int row = bounds.height - 1; row >= 0; --row)
 	{
-		std::cerr << __FILE__":" << __LINE__ << " - Expected components:" << expectedComponents <<
-			" Actual components:" << foregroundComponentCount << "\n";
-	}
-
-	//Get all components at baseline
-	std::vector<bool> componentAtBaseline = getBaselineComponents(stats, componentIsForeground);
-
-	//Map characters to components
-	const auto charComponents = mapCharacterComponents(stats, componentIsForeground,
-		componentAtBaseline);
-
-	//Calculate median, capital, and descender
-	for (size_t i = 0; i < text.length(); ++i)
-	{
-		const std::vector<size_t> &components = charComponents.at(i);
-
-		//Median and capital
-		//Only calculate from alphanumeric characters
-		if (std::isalnum(text.at(i)))
+		const int rowMass = rowMasses.at<int>(row, 0);
+		if (rowMass > averageRowMass)
 		{
-			for (const auto component : components)
-			{
-				const int top = stats.at<int>(static_cast<int>(component), cv::CC_STAT_TOP);
-				switch (properties.at(i).topPosition)
-				{
-				case CharProperty::Top::Median:
-					if (median < (baseline - top))
-						median = baseline - top;
-					break;
-				case CharProperty::Top::Capital:
-					if (capital < (baseline - top))
-						capital = baseline - top;
-					break;
-				default: std::cerr << __FILE__":" << __LINE__
-					<< " Non-alphanumeric character should not be here :(\n";
-				}
-			}
-		}
-
-		//Descender
-		if (properties.at(i).bottomPosition == CharProperty::Bottom::Descender)
-		{
-			for (const auto component : components)
-			{
-				const int bottom = stats.at<int>(static_cast<int>(component), cv::CC_STAT_TOP)
-					+ stats.at<int>(static_cast<int>(component),
-						cv::CC_STAT_HEIGHT);
-				if (descender < (bottom - baseline))
-					descender = bottom - baseline;
-			}
+			baselineRow = row;
+			break;
 		}
 	}
+	//Verify given baseline is similar to calculated baseline
+	if (baselineRow >= 0)
+	{
+		std::cerr << "Baseline = " << baseline << ", " << baselineRow << "\n";
+		if (std::abs(baseline - baselineRow) > bounds.height * 0.08)
+			std::cerr << "Exceeds 8%\n";
+	}
+	else
+		std::cerr << "No baseline\n";
 
-	//Create estimate of median from capital
-	if (median == 0 && capital != 0)
-		median = std::round(capital * MEDIAN_CAPITAL_RATIO);
-	//Create estimate of capital from median
-	else if (capital == 0 && median != 0)
-		capital = std::round(median * CAPITAL_MEDIAN_RATIO);
+	//Find row corresponding to the text median
+	//The first row with a mass exceeding the average is assumed to be the median
+	int medianRow = -1;
+	for (int row = 0; row < bounds.height; ++row)
+	{
+		const int rowMass = rowMasses.at<int>(row, 0);
+		if (rowMass > averageRowMass)
+		{
+			medianRow = row;
+			break;
+		}
+	}
+	//Set x-height
+	if (medianRow >= 0)
+		xHeight = baseline - medianRow;
+	else
+		std::cerr << "No median\n";
 
-	//Create estimate of descender from capital
-	if (descender == 0 && capital != 0)
-		descender = std::round(capital * DESCENDER_CAPITAL_RATIO);
-	//Create estimate of descender from median
-	else if (descender == 0 && median != 0)
-		descender = std::round(median * DESCENDER_MEDIAN_RATIO);
+	//Create estimate of X-height from Cap height
+	if (xHeight == 0 && capHeight != 0)
+		xHeight = std::round(capHeight * MEDIAN_CAPITAL_RATIO);
+	//Create estimate of Cap height from X-height
+	else if (capHeight == 0 && xHeight != 0)
+		capHeight = std::round(xHeight * CAPITAL_MEDIAN_RATIO);
+
+	//Create estimate of Descent from Cap height
+	if (descent == 0 && capHeight != 0)
+		descent = std::round(capHeight * DESCENDER_CAPITAL_RATIO);
+	//Create estimate of Descent from X-height
+	else if (descent == 0 && xHeight != 0)
+		descent = std::round(xHeight * DESCENDER_MEDIAN_RATIO);
 
 	//Update bounds
-	bounds.y = (bounds.y + baseline) - capital;
-	baseline = capital;
-	bounds.height = baseline + descender;
+	bounds.y = (bounds.y + baseline) - capHeight;
+	baseline = capHeight;
+	bounds.height = baseline + descent;
 }
 
 //Returns bounds of text
@@ -136,34 +104,34 @@ std::string FontMetric::getText() const
 	return text;
 }
 
-//Returns ascender
-int FontMetric::getAscender() const
+//Returns ascent
+int FontMetric::getAscent() const
 {
-	return ascender;
+	return ascent;
 }
 
-//Returns capital
-int FontMetric::getCapital() const
+//Returns cap height
+int FontMetric::getCapHeight() const
 {
-	return capital;
+	return capHeight;
 }
 
-//Returns median
-int FontMetric::getMedian() const
+//Returns x-height
+int FontMetric::getXHeight() const
 {
-	return median;
+	return xHeight;
 }
 
-//Returns baseline
+//Returns pixels from top of bounds to baseline
 int FontMetric::getBaseline() const
 {
 	return baseline;
 }
 
-//Returns descender
-int FontMetric::getDescender() const
+//Returns descent
+int FontMetric::getDescent() const
 {
-	return descender;
+	return descent;
 }
 
 //Scales the font metric by given factor
@@ -177,13 +145,13 @@ void FontMetric::scale(const double factor)
 		const int scaledHeight = std::round(bounds.br().y * factor - bounds.y * factor);
 		bounds = cv::Rect(scaledX, scaledY, scaledWidth, scaledHeight);
 
-		ascender = std::round(ascender * factor);
-		capital = std::round(capital * factor);
-		median = std::round(median * factor);
+		ascent = std::round(ascent * factor);
+		capHeight = std::round(capHeight * factor);
+		xHeight = std::round(xHeight * factor);
 
 		baseline = std::round(baseline * factor);
 
-		descender = std::round(descender * factor);
+		descent = std::round(descent * factor);
 	}
 }
 
@@ -207,8 +175,7 @@ std::vector<size_t> FontMetric::getExpectedComponentCount()
 }
 
 //Returns which components are in the foreground
-std::vector<bool> FontMetric::getForegroundComponents(const cv::Mat &componentImage,
-	const cv::Mat &textImage,
+std::vector<bool> FontMetric::getForegroundComponents(const cv::Mat &componentImage, const cv::Mat &textImage,
 	const size_t componentCount)
 {
 	std::vector<bool> componentIsForeground(componentCount, false);
@@ -239,8 +206,7 @@ std::vector<bool> FontMetric::getBaselineComponents(const cv::Mat &stats,
 		const int top = stats.at<int>(static_cast<int>(component), cv::CC_STAT_TOP);
 		const int bottom = top + stats.at<int>(static_cast<int>(component), cv::CC_STAT_HEIGHT);
 
-		if (componentIsForeground.at(component) &&
-			top < (baseline + BASELINE_RANGE) &&
+		if (componentIsForeground.at(component) && top < (baseline + BASELINE_RANGE) &&
 			bottom >(baseline - BASELINE_RANGE))
 		{
 			componentAtBaseline.at(component) = true;
@@ -268,8 +234,7 @@ int FontMetric::getMaxArea(const cv::Mat &stats, const std::vector<bool> &compon
 
 //Returns for each character in text the components that belong to it
 std::vector<std::vector<size_t>>
-FontMetric::mapCharacterComponents(const cv::Mat &stats,
-	const std::vector<bool> &componentIsForeground,
+FontMetric::mapCharacterComponents(const cv::Mat &stats, const std::vector<bool> &componentIsForeground,
 	const std::vector<bool> &componentAtBaseline)
 {
 	const int areaThreshold = std::round(getMaxArea(stats, componentIsForeground) * 0.05);
@@ -312,8 +277,7 @@ FontMetric::mapCharacterComponents(const cv::Mat &stats,
 			//Select next non-floating character
 			++currentCharIndex;
 			while (currentCharIndex < text.length()
-				&& properties.at(currentCharIndex).bottomPosition
-				== CharProperty::Bottom::Floating)
+				&& properties.at(currentCharIndex).bottomPosition == CharProperty::Bottom::Floating)
 			{
 				++currentCharIndex;
 			}

@@ -20,18 +20,18 @@ public:
 	//Returns text
 	std::string getText() const;
 
-	//Returns ascender
-	int getAscender() const;
-	//Returns capital
-	int getCapital() const;
-	//Returns median
-	int getMedian() const;
+	//Returns ascent
+	int getAscent() const;
+	//Returns cap height
+	int getCapHeight() const;
+	//Returns x-height
+	int getXHeight() const;
 
-	//Returns baseline
+	//Returns pixels from top of bounds to baseline
 	int getBaseline() const;
 
-	//Returns descender
-	int getDescender() const;
+	//Returns descent
+	int getDescent() const;
 
 	//Scales the font metric by given factor
 	void scale(const double factor);
@@ -40,10 +40,10 @@ private:
 	//The pixel range from the baseline that a component must be in to be considered at the baseline
 	static const int BASELINE_RANGE = 5;
 
-	//The ratios between median and capital to use as fallback if only one value is calculated
+	//The ratios between median and capital to use as fall back if only one value is calculated
 	static constexpr double MEDIAN_CAPITAL_RATIO = 50.0 / 66.0;
 	static constexpr double CAPITAL_MEDIAN_RATIO = 66.0 / 50.0;
-	//The ratios between capital/median and descender to use as fallback if descender not calculated
+	//The ratios between capital/median and descender to use as fall back if descender not calculated
 	static constexpr double DESCENDER_CAPITAL_RATIO = 16.0 / 66.0;
 	static constexpr double DESCENDER_MEDIAN_RATIO = 16.0 / 50.0;
 
@@ -54,13 +54,13 @@ private:
 	std::vector<CharProperty> properties;
 
 	//Font metrics
-	int ascender; //Pixels above baseline to ascender
-	int capital; //Pixels above baseline to capital
-	int median; //Pixels above baseline to median
+	int ascent; //Pixels above baseline to ascender line
+	int capHeight; //Pixels above baseline to capital line
+	int xHeight; //Pixels above baseline to median line
 
 	int baseline; //Pixels from top of bounds to baseline
 
-	int descender; //Pixels below baseline to descender
+	int descent; //Pixels below baseline to descender line
 
 	//----------------------------------------------------------------------------------------------
 	//Returns the number of expected components for each character in text
