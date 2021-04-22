@@ -68,29 +68,6 @@ void MainWindow::setThreshold(const int threshold)
 	ui->graphicsView->setThreshold(threshold, ui->checkOtsu->isChecked());
 }
 
-//Changes displayed level of OCR
-void MainWindow::OCRLevelChanged(const QString t_level)
-{
-	//Select level to iterate
-	tesseract::PageIteratorLevel level;
-	if (t_level.contains("Word"))
-		level = tesseract::RIL_WORD;
-	else if (t_level.contains("Textline"))
-		level = tesseract::RIL_TEXTLINE;
-	else if (t_level.contains("Paragraph"))
-		level = tesseract::RIL_PARA;
-	else if (t_level.contains("Block"))
-		level = tesseract::RIL_BLOCK;
-	else
-	{
-		level = tesseract::RIL_WORD; //Suppress warning of uninitialised variable
-		std::cerr << __FILE__":" << __LINE__ << " - OCR level not recognised\n";
-		QCoreApplication::exit(-1);
-	}
-
-	ui->graphicsView->setOCRLevel(level);
-}
-
 //Displayed image choice changed
 void MainWindow::imageChoiceChanged(QAbstractButton *button)
 {

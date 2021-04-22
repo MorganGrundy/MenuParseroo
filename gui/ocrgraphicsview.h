@@ -32,9 +32,6 @@ public:
 	//Selects which image to display
 	void showImage(const Image t_type);
 
-	//Sets the level of OCR results that are shown
-	void setOCRLevel(const tesseract::PageIteratorLevel t_level);
-
 public slots:
 	//Allows user to edit the mask of the current image
 	void editMask();
@@ -65,7 +62,6 @@ private:
 
 	//Tesseract
 	MultiscaleOCR tessOCR;
-	tesseract::PageIteratorLevel tess_level;
 
 	//Font metric items for text (also has text in data 0)
 	std::vector<GraphicsFontMetricItem *> fontMetricItems;

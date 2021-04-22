@@ -31,7 +31,7 @@ MultiscaleOCR::MultiscaleOCR()
 		std::cerr << __FILE__":" << __LINE__ << " - Could not initialize tesseract\n";
 		QCoreApplication::exit(-1);
 	}
-	tess_api.SetPageSegMode(tesseract::PageSegMode::PSM_AUTO);
+	tess_api.SetPageSegMode(tesseract::PageSegMode::PSM_SINGLE_LINE);
 }
 
 MultiscaleOCR::~MultiscaleOCR()
@@ -45,7 +45,6 @@ void MultiscaleOCR::setImage(const cv::Mat &t_image)
 	image = t_image;
 }
 
-#include <opencv2/highgui.hpp>
 //Performs OCR on all potential text
 void MultiscaleOCR::OCR()
 {
@@ -56,7 +55,7 @@ void MultiscaleOCR::OCR()
 	cv::Mat invertedIm;
 	cv::bitwise_not(image, invertedIm);
 	cv::Mat blurredIm;
-	cv::GaussianBlur(invertedIm, blurredIm, cv::Size(29, 1), 7, 7);
+	cv::GaussianBlur(invertedIm, blurredIm, cv::Size(17, 1), 7, 7);
 
 	//Get components + stats of blurred image (groups text)
 	cv::Mat components, stats, centroids;
@@ -75,34 +74,22 @@ void MultiscaleOCR::OCR()
 		if (height < 7)
 			continue;
 		const cv::Mat blurredROI = blurredIm(cv::Rect(left, top, width, height));
-		//Tesseract struggles when no whitespace border around text
-		//So need to add a border
+		const cv::Mat roi = image(cv::Rect(left, top, width, height));
+
+		//Scale text to optimal character height
+		const double scale = 30.0 / height;
+		cv::Mat scaledROI;
+		cv::resize(roi, scaledROI, cv::Size(), scale, scale);
+		const double inverseScale = height / static_cast<double>(scaledROI.rows);
+
+		//Tesseract struggles when no whitespace border around text, so add a border
 		//The horizontal blurring has already provided us with a left/right border
-		//Need to clone ROI otherwise border expands ROI instead of creating border
-		cv::Mat roi = image(cv::Rect(left, top, width, height)).clone();
 		const int borderTop = 10;
 		const int borderBottom = 10;
 		const int borderLeft = 0;
 		const int borderRight = 0;
-		cv::copyMakeBorder(roi, roi, borderTop, borderBottom, borderLeft, borderRight,
+		cv::copyMakeBorder(scaledROI, scaledROI, borderTop, borderBottom, borderLeft, borderRight,
 			cv::BORDER_CONSTANT, cv::Scalar(255));
-
-		//Scale text to optimal character height
-		const double scale = 30.0 / height;
-		const double inverseScale = height / 30.0;
-		cv::Mat scaledROI;
-		cv::resize(roi, scaledROI, cv::Size(), scale, scale);
-
-		std::cerr << "Size = " << roi.size() << "\n";
-		std::cerr << "Scaled Size = " << scaledROI.size() << "\n";
-
-		cv::namedWindow("ROI", cv::WINDOW_NORMAL);
-		cv::imshow("ROI", roi);
-		cv::namedWindow("Scaled ROI", cv::WINDOW_NORMAL);
-		cv::imshow("Scaled ROI", scaledROI);
-		cv::waitKey();
-		cv::destroyWindow("ROI");
-		cv::destroyWindow("Scaled ROI");
 
 		//Set image, perform OCR, and get result iterator
 		tess_api.SetImage(scaledROI.data, scaledROI.cols, scaledROI.rows, scaledROI.channels(),
@@ -110,58 +97,44 @@ void MultiscaleOCR::OCR()
 		tess_api.Recognize(NULL);
 		auto tess_ri = std::shared_ptr<tesseract::ResultIterator>(tess_api.GetIterator());
 
-		//Calculate xHeight of text
-		const auto [baseline, median] = getBaselineAndMedianRows(blurredROI);
-		if (baseline == -1 || median == -1)
-			continue;
-		const int xHeight = baseline - median;
-
 		//Filter results
 		if (tess_ri != nullptr)
 		{
-			std::cerr << "OCR Results\n";
 			tess_ri->Begin();
 			do
 			{
-				std::cerr << "Result Found\n";
 				//Ignore images
 				if (tess_ri->BlockType() != PolyBlockType::PT_FLOWING_IMAGE &&
 					tess_ri->BlockType() != PolyBlockType::PT_HEADING_IMAGE &&
 					tess_ri->BlockType() != PolyBlockType::PT_PULLOUT_IMAGE)
 				{
-					std::cerr << "Results is text\n";
 					//Get text bounding box and baseline
 					int x1, y1, x2, y2;
 					if (!tess_ri->BoundingBox(tesseract::RIL_TEXTLINE, &x1, &y1, &x2, &y2))
 						continue;
-					std::cerr << "Bounding box\n";
 
 					int base_x1, base_y1, base_x2, base_y2;
 					if (!tess_ri->Baseline(tesseract::RIL_TEXTLINE, &base_x1, &base_y1, &base_x2, &base_y2))
 						continue;
-					std::cerr << "Baseline\n";
 
-					if (y2 - y1 < 25 || x2 - x1 < 10)
-						continue;
-					std::cerr << "Size\n";
-
+					//Convert bounding box and baseline to global space
 					//Apply inverse scale to bounding box and baseline
-					x1 = left + x1 * inverseScale;
-					y1 = top + y1 * inverseScale;
-					x2 = left + x2 * inverseScale;
-					y2 = top + y2 * inverseScale;
+					x1 = left + std::floor((x1 - borderLeft) * inverseScale);
+					y1 = top + std::floor((y1 - borderTop) * inverseScale);
+					x2 = left + std::ceil((x2 - borderLeft) * inverseScale);
+					y2 = top + std::ceil((y2 - borderTop) * inverseScale);
 
-					base_x1 = left + base_x1 * inverseScale;
-					base_y1 = top + base_y1 * inverseScale;
-					base_x2 = left + base_x2 * inverseScale;
-					base_y2 = top + base_y2 * inverseScale;
+					base_x1 = left + std::floor((base_x1 - borderLeft) * inverseScale);
+					base_y1 = top + std::floor((base_y1 - borderTop) * inverseScale);
+					base_x2 = left + std::ceil((base_x2 - borderLeft) * inverseScale);
+					base_y2 = top + std::ceil((base_y2 - borderTop) * inverseScale);
 
+					//Calculate font metrics of text and add to results
 					char *text = tess_ri->GetUTF8Text(tesseract::RIL_TEXTLINE);
-					std::cerr << text << "\n";
 					try
 					{
-						FontMetric metric(blurredROI, cv::Rect(x1, y1, x2 - x1, y2 - y1),
-							std::string(text), base_y1 - y1);
+						FontMetric metric(blurredROI, cv::Rect(x1, top, x2 - x1, height),
+							std::string(text), base_y1 - top);
 
 						results.push_back(metric);
 					}
@@ -174,45 +147,6 @@ void MultiscaleOCR::OCR()
 			} while ((tess_ri->Next(tesseract::RIL_TEXTLINE)));
 		}
 	}
-}
-
-//Returns the row of the baseline and median
-//Assumes roi to be a horizontal gaussian blur of a single line of text
-std::pair<int, int> MultiscaleOCR::getBaselineAndMedianRows(const cv::Mat &roi) const
-{
-	//Calculate row mass (sum of blurred rows)
-	cv::Mat rowMasses;
-	cv::reduce(roi, rowMasses, 1, cv::ReduceTypes::REDUCE_SUM, CV_32S);
-	//Calculate average row mass
-	const double averageRowMass = cv::sum(rowMasses)[0] / roi.rows;
-
-	//Find row corresponding to the text baseline
-	//The last row with a mass exceeding the average is assumed to be the baseline
-	int baselineRow = -1;
-	for (int row = roi.rows - 1; row >= 0; --row)
-	{
-		const int rowMass = rowMasses.at<int>(row, 0);
-		if (rowMass > averageRowMass)
-		{
-			baselineRow = row;
-			break;
-		}
-	}
-
-	//Find row corresponding to the text median
-	//The first row with a mass exceeding the average is assumed to be the median
-	int medianRow = -1;
-	for (int row = 0; row < roi.rows; ++row)
-	{
-		const int rowMass = rowMasses.at<int>(row, 0);
-		if (rowMass > averageRowMass)
-		{
-			medianRow = row;
-			break;
-		}
-	}
-
-	return { baselineRow, medianRow };
 }
 
 //Clears results

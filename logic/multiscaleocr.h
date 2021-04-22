@@ -38,11 +38,6 @@ private:
 	tesseract::TessBaseAPI tess_api;
 	//Tesseract results
 	std::vector<FontMetric> results;
-
-	//------------------------------------------------------------------------
-	//Returns the row of the baseline and median
-	//Assumes roi to be a horizontal gaussian blur of a single line of text
-	std::pair<int, int> getBaselineAndMedianRows(const cv::Mat &roi) const;
 };
 
 #endif // MULTISCALEOCR_H

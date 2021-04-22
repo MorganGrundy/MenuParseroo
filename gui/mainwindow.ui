@@ -212,30 +212,6 @@
        </widget>
       </item>
       <item>
-       <widget class="QComboBox" name="comboOCRLevel">
-        <item>
-         <property name="text">
-          <string>Word</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Textline</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Paragraph</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Block</string>
-         </property>
-        </item>
-       </widget>
-      </item>
-      <item>
        <spacer name="horizontalSpacer_4">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
@@ -258,7 +234,7 @@
      <x>0</x>
      <y>0</y>
      <width>1280</width>
-     <height>20</height>
+     <height>21</height>
     </rect>
    </property>
   </widget>
@@ -318,22 +294,6 @@
     <hint type="destinationlabel">
      <x>639</x>
      <y>414</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>comboOCRLevel</sender>
-   <signal>currentIndexChanged(QString)</signal>
-   <receiver>MainWindow</receiver>
-   <slot>OCRLevelChanged(QString)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>763</x>
-     <y>42</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>639</x>
-     <y>229</y>
     </hint>
    </hints>
   </connection>

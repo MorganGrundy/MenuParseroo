@@ -29,9 +29,6 @@ public slots:
 	//Sets threshold for thresholding image
 	void setThreshold(const int threshold);
 
-	//Changes displayed level of OCR
-	void OCRLevelChanged(const QString);
-
 	//Displayed image choice changed
 	void imageChoiceChanged(QAbstractButton *button);
 
