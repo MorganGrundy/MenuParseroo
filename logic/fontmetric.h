@@ -37,9 +37,6 @@ public:
 	void scale(const double factor);
 
 private:
-	//The pixel range from the baseline that a component must be in to be considered at the baseline
-	static const int BASELINE_RANGE = 5;
-
 	//The ratios between median and capital to use as fall back if only one value is calculated
 	static constexpr double MEDIAN_CAPITAL_RATIO = 50.0 / 66.0;
 	static constexpr double CAPITAL_MEDIAN_RATIO = 66.0 / 50.0;
@@ -63,26 +60,11 @@ private:
 	int descent; //Pixels below baseline to descender line
 
 	//----------------------------------------------------------------------------------------------
-	//Returns the number of expected components for each character in text
-	std::vector<size_t> getExpectedComponentCount();
-
-	//Returns which components are in the foreground
-	std::vector<bool> getForegroundComponents(const cv::Mat &componentImage,
-		const cv::Mat &textImage,
-		const size_t componentCount);
-
-	//Returns which components are at the baseline
-	std::vector<bool> getBaselineComponents(const cv::Mat &stats,
-		const std::vector<bool> &componentIsForeground);
-
-	//Returns the maximum area of components
-	int getMaxArea(const cv::Mat &stats, const std::vector<bool> &componentIsForeground);
-
-	//Returns for each character in text the components that belong to it
-	std::vector<std::vector<size_t>>
-		mapCharacterComponents(const cv::Mat &stats,
-			const std::vector<bool> &componentIsForeground,
-			const std::vector<bool> &componentAtBaseline);
+	//With larger sizes the ascender/capital/median row is easier to look at as multiple rows
+	//The row range can be calculated from this percentage of the size
+	static constexpr double ROW_PERCENTAGE_RANGE = 0.08;
+	//Calculate the maximum mass within range of target row
+	int calculateRowMass(const cv::Mat &rowMasses, const int targetRow);
 };
 
 #endif // FONTMETRIC_H

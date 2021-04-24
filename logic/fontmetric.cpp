@@ -14,17 +14,28 @@ FontMetric::FontMetric(const cv::Mat &t_image, const cv::Rect t_bounds, const st
 	: bounds{ t_bounds }, text{ t_text }, ascent{ 0 }, capHeight{ 0 }, xHeight{ 0 }, baseline{ t_baseline },
 	descent{ 0 }
 {
-	//Enforce minimum baseline
-	if (baseline < BASELINE_RANGE)
-		throw std::invalid_argument("FontMetric baseline must be at least " + std::to_string(BASELINE_RANGE));
-
-	//Get text properties
-	for (auto character : text)
-		properties.push_back(CharProperty(character));
-
 	//Text must contain alphanumerics
 	if (!std::any_of(text.cbegin(), text.cend(), [](const char c) {return std::isalnum(c); }))
 		throw std::invalid_argument("FontMetric text must contain at least one alphanumeric");
+
+	//Get text properties
+	//Ascending characters are too unreliable and just interfere so treat as capital
+	size_t ascendingCount = 0;
+	size_t capitalCount = 0;
+	size_t medianCount = 0;
+	size_t descendingCount = 0;
+	for (auto character : text)
+	{
+		properties.push_back(CharProperty(character));
+		switch (properties.back().topPosition)
+		{
+		case CharProperty::Top::Ascender:
+		case CharProperty::Top::Capital: ++capitalCount; break;
+		case CharProperty::Top::Median: ++medianCount; break;
+		}
+		if (properties.back().bottomPosition == CharProperty::Bottom::Descender)
+			++descendingCount;
+	}
 
 	//Calculate row mass (sum of blurred rows)
 	cv::Mat rowMasses;
@@ -32,62 +43,103 @@ FontMetric::FontMetric(const cv::Mat &t_image, const cv::Rect t_bounds, const st
 	//Calculate average row mass
 	const double averageRowMass = cv::sum(rowMasses)[0] / bounds.height;
 
-	//Find row corresponding to the text baseline
-	//The last row with a mass exceeding the average is assumed to be the baseline
-	int baselineRow = -1;
-	for (int row = bounds.height - 1; row >= 0; --row)
+	//Calculate ascent
+	if (ascendingCount > 0)
 	{
-		const int rowMass = rowMasses.at<int>(row, 0);
-		if (rowMass > averageRowMass)
+		//Distance from top of image to baseline
+		ascent = baseline;
+	}
+
+	//Calculate Cap height
+	if (ascendingCount == 0 && capitalCount > 0)
+	{
+		//Distance from top of image to baseline
+		capHeight = baseline;
+	}
+	else if (ascendingCount > 0 && capitalCount > 0)
+	{
+		//Calculate the percentage increase of characters from ascending to capital row
+		const double charPercentageIncrease = capitalCount / static_cast<double>(ascendingCount);
+		//Calculate mass threshold for capital row
+		const int ascenderRow = baseline - ascent;
+		const int massThreshold = std::round(calculateRowMass(rowMasses, ascenderRow) * (1.0 + charPercentageIncrease * 0.8));
+
+		//Find highest row below ascender with a mass exceeding threshold
+		for (int row = ascenderRow + 1; row < baseline; ++row)
 		{
-			baselineRow = row;
-			break;
+			if (rowMasses.at<int>(row, 0) > massThreshold)
+			{
+				capHeight = baseline - row;
+				break;
+			}
 		}
 	}
-	//Verify given baseline is similar to calculated baseline
-	if (baselineRow >= 0)
-	{
-		std::cerr << "Baseline = " << baseline << ", " << baselineRow << "\n";
-		if (std::abs(baseline - baselineRow) > bounds.height * 0.08)
-			std::cerr << "Exceeds 8%\n";
-	}
-	else
-		std::cerr << "No baseline\n";
 
-	//Find row corresponding to the text median
-	//The first row with a mass exceeding the average is assumed to be the median
-	int medianRow = -1;
-	for (int row = 0; row < bounds.height; ++row)
+	//Calculate x-height
+	if (ascendingCount == 0 && capitalCount == 0 && medianCount > 0)
 	{
-		const int rowMass = rowMasses.at<int>(row, 0);
-		if (rowMass > averageRowMass)
+		//Distance from top of image to baseline
+		xHeight = baseline;
+	}
+	else if (capitalCount > 0 && medianCount > 0)
+	{
+		//Calculate the percentage increase of characters from capital to median row
+		const double charPercentageIncrease = medianCount / static_cast<double>(capitalCount + ascendingCount);
+		//Calculate mass threshold for median row
+		const int capitalRow = baseline - capHeight;
+		const int massThreshold = std::round(calculateRowMass(rowMasses, capitalRow) * (1.0 + charPercentageIncrease * 0.8));
+
+		//Find highest row below capital with a mass exceeding threshold
+		for (int row = capitalRow + 1; row < baseline; ++row)
 		{
-			medianRow = row;
-			break;
+			if (rowMasses.at<int>(row, 0) > massThreshold)
+			{
+				xHeight = baseline - row;
+				break;
+			}
 		}
 	}
-	//Set x-height
-	if (medianRow >= 0)
-		xHeight = baseline - medianRow;
-	else
-		std::cerr << "No median\n";
+	else if (ascendingCount > 0 && capitalCount == 0 && medianCount > 0)
+	{
+		//Calculate the percentage increase of characters from ascending to median row
+		const double charPercentageIncrease = medianCount / static_cast<double>(ascendingCount);
+		//Calculate mass threshold for median row
+		const int ascendingRow = baseline - ascent;
+		const int massThreshold = std::round(rowMasses.at<int>(ascendingRow, 0) * (1.0 + charPercentageIncrease * 0.8));
 
-	//Create estimate of X-height from Cap height
-	if (xHeight == 0 && capHeight != 0)
-		xHeight = std::round(capHeight * MEDIAN_CAPITAL_RATIO);
-	//Create estimate of Cap height from X-height
-	else if (capHeight == 0 && xHeight != 0)
-		capHeight = std::round(xHeight * CAPITAL_MEDIAN_RATIO);
+		//Find highest row below ascender with a mass exceeding threshold
+		for (int row = ascendingRow + 1; row < baseline; ++row)
+		{
+			if (rowMasses.at<int>(row, 0) > massThreshold)
+			{
+				xHeight = baseline - row;
+				break;
+			}
+		}
+	}
+
+	//Calculate descent
+	if (descendingCount > 0)
+	{
+		descent = bounds.height - baseline;
+	}
 
 	//Create estimate of Descent from Cap height
 	if (descent == 0 && capHeight != 0)
 		descent = std::round(capHeight * DESCENDER_CAPITAL_RATIO);
-	//Create estimate of Descent from X-height
+	//Create estimate of Descent from x-height
 	else if (descent == 0 && xHeight != 0)
 		descent = std::round(xHeight * DESCENDER_MEDIAN_RATIO);
 
+	//Create estimate of x-height from Cap height
+	if (xHeight == 0 && capHeight != 0)
+		xHeight = std::round(capHeight * MEDIAN_CAPITAL_RATIO);
+	//Create estimate of Cap height from x-height
+	else if (capHeight == 0 && xHeight != 0)
+		capHeight = std::round(xHeight * CAPITAL_MEDIAN_RATIO);
+
 	//Update bounds
-	bounds.y = (bounds.y + baseline) - capHeight;
+	bounds.y = bounds.y + baseline - capHeight;
 	baseline = capHeight;
 	bounds.height = baseline + descent;
 }
@@ -155,138 +207,17 @@ void FontMetric::scale(const double factor)
 	}
 }
 
-//Returns the number of expected components for each character in text
-std::vector<size_t> FontMetric::getExpectedComponentCount()
+//Calculate the maximum mass within range of target row
+int FontMetric::calculateRowMass(const cv::Mat &rowMasses, const int targetRow)
 {
-	std::vector<size_t> charComponents(text.length(), 1);
-
-	for (size_t i = 0; i < text.length(); ++i)
+	int range = std::ceil(baseline * ROW_PERCENTAGE_RANGE);
+	//Find max mass in range
+	int mass = 0;
+	for (int row = std::max(0, targetRow - range); row < targetRow + range &&
+		row < rowMasses.rows; ++row)
 	{
-		//3 components = %
-		if (text.at(i) == '%')
-			charComponents.at(i) = 3;
-		//2 components = !":;=?ij
-		else if (text.at(i) == '!' || text.at(i) == '"' || text.at(i) == ':' || text.at(i) == ';' ||
-			text.at(i) == '=' || text.at(i) == '?' || text.at(i) == 'i' || text.at(i) == 'j')
-			charComponents.at(i) = 2;
+		mass = std::max(mass, rowMasses.at<int>(row, 0));
 	}
 
-	return charComponents;
-}
-
-//Returns which components are in the foreground
-std::vector<bool> FontMetric::getForegroundComponents(const cv::Mat &componentImage, const cv::Mat &textImage,
-	const size_t componentCount)
-{
-	std::vector<bool> componentIsForeground(componentCount, false);
-
-	const ushort *componentPtr;
-	const uchar *textPtr;
-	for (int y = 0; y < componentImage.rows; ++y)
-	{
-		componentPtr = componentImage.ptr<ushort>(y);
-		textPtr = textImage.ptr<uchar>(y);
-		for (int x = 0; x < componentImage.cols; ++x)
-		{
-			if (textPtr[x] != 0 && !componentIsForeground.at(componentPtr[x]))
-				componentIsForeground.at(componentPtr[x]) = true;
-		}
-	}
-
-	return componentIsForeground;
-}
-
-//Returns which components are at the baseline
-std::vector<bool> FontMetric::getBaselineComponents(const cv::Mat &stats,
-	const std::vector<bool> &componentIsForeground)
-{
-	std::vector<bool> componentAtBaseline(componentIsForeground.size(), false);
-	for (size_t component = 0; component < componentIsForeground.size(); ++component)
-	{
-		const int top = stats.at<int>(static_cast<int>(component), cv::CC_STAT_TOP);
-		const int bottom = top + stats.at<int>(static_cast<int>(component), cv::CC_STAT_HEIGHT);
-
-		if (componentIsForeground.at(component) && top < (baseline + BASELINE_RANGE) &&
-			bottom >(baseline - BASELINE_RANGE))
-		{
-			componentAtBaseline.at(component) = true;
-		}
-	}
-
-	return componentAtBaseline;
-}
-
-//Returns the maximum area of components
-int FontMetric::getMaxArea(const cv::Mat &stats, const std::vector<bool> &componentIsForeground)
-{
-	int maxArea = 0;
-	for (int component = 0; component < componentIsForeground.size(); ++component)
-	{
-		if (componentIsForeground.at(component))
-		{
-			if (stats.at<int>(component, cv::CC_STAT_AREA) > maxArea)
-				maxArea = stats.at<int>(component, cv::CC_STAT_AREA);
-		}
-	}
-
-	return maxArea;
-}
-
-//Returns for each character in text the components that belong to it
-std::vector<std::vector<size_t>>
-FontMetric::mapCharacterComponents(const cv::Mat &stats, const std::vector<bool> &componentIsForeground,
-	const std::vector<bool> &componentAtBaseline)
-{
-	const int areaThreshold = std::round(getMaxArea(stats, componentIsForeground) * 0.05);
-
-	std::vector<std::vector<size_t>> characterComponents(text.length());
-
-	//Select first non-floating character
-	size_t currentCharIndex = 0;
-	while (currentCharIndex < text.length()
-		&& properties.at(currentCharIndex).bottomPosition == CharProperty::Bottom::Floating)
-	{
-		++currentCharIndex;
-	}
-
-	//Sort components by stat left
-	std::vector<size_t> sortedComponentsLeft(componentAtBaseline.size());
-	for (size_t i = 0; i < sortedComponentsLeft.size(); ++i)
-		sortedComponentsLeft.at(i) = i;
-	std::sort(sortedComponentsLeft.begin(), sortedComponentsLeft.end(),
-		[stats](const size_t a, const size_t b) -> bool 		{
-			return stats.at<int>(static_cast<int>(a), cv::CC_STAT_LEFT) <
-				stats.at<int>(static_cast<int>(b), cv::CC_STAT_LEFT);
-		});
-
-	//Map components to characters
-	for (const auto component : sortedComponentsLeft)
-	{
-		if (stats.at<int>(static_cast<int>(component), cv::CC_STAT_AREA) > areaThreshold
-			&& componentIsForeground.at(component) && componentAtBaseline.at(component))
-		{
-			//Map component to current character
-			characterComponents.at(currentCharIndex).push_back(component);
-
-			//Find component above (representing the dot of i or j) and map to character
-			if (text.at(currentCharIndex) == 'i' || text.at(currentCharIndex == 'j'))
-			{
-
-			}
-
-			//Select next non-floating character
-			++currentCharIndex;
-			while (currentCharIndex < text.length()
-				&& properties.at(currentCharIndex).bottomPosition == CharProperty::Bottom::Floating)
-			{
-				++currentCharIndex;
-			}
-
-			//End of text
-			if (currentCharIndex >= text.length())
-				break;
-		}
-	}
-
-	return characterComponents;
+	return mass;
 }
