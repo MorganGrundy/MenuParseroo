@@ -38,8 +38,10 @@ public:
 
 private:
 	//The ratios between median and capital to use as fall back if only one value is calculated
-	static constexpr double MEDIAN_CAPITAL_RATIO = 50.0 / 66.0;
-	static constexpr double CAPITAL_MEDIAN_RATIO = 66.0 / 50.0;
+	static constexpr double MEDIAN_CAPITAL_RATIO_AVG = 0.750165;
+	static constexpr double MEDIAN_CAPITAL_RATIO_STDDEV = 0.044588;
+	static constexpr double CAPITAL_MEDIAN_RATIO_AVG = 1.33771;
+	static constexpr double CAPITAL_MEDIAN_RATIO_STDDEV = 0.592921;
 	//The ratios between capital/median and descender to use as fall back if descender not calculated
 	static constexpr double DESCENDER_CAPITAL_RATIO = 16.0 / 66.0;
 	static constexpr double DESCENDER_MEDIAN_RATIO = 16.0 / 50.0;

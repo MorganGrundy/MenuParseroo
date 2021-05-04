@@ -87,8 +87,13 @@ FontMetric::FontMetric(const cv::Mat &t_image, const cv::Rect t_bounds, const st
 		const int capitalRow = baseline - capHeight;
 		const int massThreshold = std::round(calculateRowMass(rowMasses, capitalRow) * (1.0 + charPercentageIncrease * 0.8));
 
+		//Calculate range to search for median row
+		const int minMedianRow = std::max(capitalRow + 1,
+			baseline - static_cast<int>(std::round(capHeight * (MEDIAN_CAPITAL_RATIO_AVG - 2 * MEDIAN_CAPITAL_RATIO_STDDEV))));
+		const int maxMedianRow = baseline - std::round(capHeight * (MEDIAN_CAPITAL_RATIO_AVG + 2 * MEDIAN_CAPITAL_RATIO_STDDEV));
+
 		//Find highest row below capital with a mass exceeding threshold
-		for (int row = capitalRow + 1; row < baseline; ++row)
+		for (int row = minMedianRow; row < maxMedianRow; ++row)
 		{
 			if (rowMasses.at<int>(row, 0) > massThreshold)
 			{
@@ -131,10 +136,10 @@ FontMetric::FontMetric(const cv::Mat &t_image, const cv::Rect t_bounds, const st
 
 	//Create estimate of x-height from Cap height
 	if (xHeight == 0 && capHeight != 0)
-		xHeight = std::round(capHeight * MEDIAN_CAPITAL_RATIO);
+		xHeight = std::round(capHeight * MEDIAN_CAPITAL_RATIO_AVG);
 	//Create estimate of Cap height from x-height
 	else if (capHeight == 0 && xHeight != 0)
-		capHeight = std::round(xHeight * CAPITAL_MEDIAN_RATIO);
+		capHeight = std::round(xHeight * CAPITAL_MEDIAN_RATIO_AVG);
 
 	//Update bounds
 	bounds.y = bounds.y + baseline - capHeight;
