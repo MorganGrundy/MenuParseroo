@@ -7,8 +7,6 @@
 
 #include <opencv2/imgproc.hpp>
 
-#include <QCoreApplication>
-
 FontMetric::FontMetric(const cv::Mat &t_image, const cv::Rect t_bounds, const std::string &t_text,
 	const int t_baseline)
 	: bounds{ t_bounds }, text{ t_text }, ascent{ 0 }, capHeight{ 0 }, xHeight{ 0 }, baseline{ t_baseline },

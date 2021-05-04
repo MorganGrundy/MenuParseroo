@@ -1,10 +1,28 @@
 #ifndef CHARPROPERTY_H
 #define CHARPROPERTY_H
 
+#include <string>
+
 //Stores the properties of a char
 class CharProperty
 {
 public:
+	//!" $ &'()* / ? [\] ` {|}
+	static const std::string ASCENDER_LIST;
+	//# % 0123456789 @ ABCDEFGHIJKLMNOPQRSTUVWXYZ ^ b d f h ijkl t £
+	static const std::string CAPITAL_LIST;
+	//+ :; < > a c e g mnopqrs uvqxyz
+	static const std::string MEDIAN_LIST;
+	//, . _
+	static const std::string SMALL_LIST;
+
+	//" ' *+ - = ^ ` ~
+	static const std::string FLOATING_LIST;
+	//! # %& 0123456789: < >? ABCDEFGHIJKLMNOP RSTUVWXYZ abcdef hi klmno rstuvwx z £
+	static const std::string BASELINE_LIST;
+	//$ () , / ; @ Q [\] _ g j pq y {|}
+	static const std::string DESCENDER_LIST;
+
 	CharProperty(const char t_char);
 
 	//Determines where top of character lies
@@ -23,15 +41,7 @@ public:
 	const Bottom bottomPosition;
 
 private:
-	static bool isAscender(const char t_char);
-	static bool isCapital(const char t_char);
-	static bool isMedian(const char t_char);
-	static bool isSmall(const char t_char);
 	static Top getTop(const char t_char);
-
-	static bool isFloating(const char t_char);
-	static bool isBaseline(const char t_char);
-	static bool isDescender(const char t_char);
 	static Bottom getBottom(const char t_char);
 };
 
