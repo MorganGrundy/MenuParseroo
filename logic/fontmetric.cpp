@@ -27,7 +27,7 @@ FontMetric::FontMetric(const cv::Mat &t_image, const cv::Rect t_bounds, const st
 		properties.push_back(CharProperty(character));
 		switch (properties.back().topPosition)
 		{
-		case CharProperty::Top::Ascender:
+		case CharProperty::Top::Ascender: ++ascendingCount; break;
 		case CharProperty::Top::Capital: ++capitalCount; break;
 		case CharProperty::Top::Median: ++medianCount; break;
 		}
@@ -62,8 +62,12 @@ FontMetric::FontMetric(const cv::Mat &t_image, const cv::Rect t_bounds, const st
 		const int ascenderRow = baseline - ascent;
 		const int massThreshold = std::round(calculateRowMass(rowMasses, ascenderRow) * (1.0 + charPercentageIncrease * 0.8));
 
+		//Calculate range to search for capital row
+		const int minCapitalRow = ascenderRow;
+		const int maxCapitalRow = baseline - std::round(ascent * (CAPITAL_ASCENDER_RATIO_AVG + 2 * CAPITAL_ASCENDER_RATIO_STDDEV));
+
 		//Find highest row below ascender with a mass exceeding threshold
-		for (int row = ascenderRow + 1; row < baseline; ++row)
+		for (int row = minCapitalRow; row < maxCapitalRow; ++row)
 		{
 			if (rowMasses.at<int>(row, 0) > massThreshold)
 			{
@@ -107,11 +111,15 @@ FontMetric::FontMetric(const cv::Mat &t_image, const cv::Rect t_bounds, const st
 		//Calculate the percentage increase of characters from ascending to median row
 		const double charPercentageIncrease = medianCount / static_cast<double>(ascendingCount);
 		//Calculate mass threshold for median row
-		const int ascendingRow = baseline - ascent;
-		const int massThreshold = std::round(rowMasses.at<int>(ascendingRow, 0) * (1.0 + charPercentageIncrease * 0.8));
+		const int ascenderRow = baseline - ascent;
+		const int massThreshold = std::round(rowMasses.at<int>(ascenderRow, 0) * (1.0 + charPercentageIncrease * 0.8));
+
+		//Calculate range to search for capital row
+		const int minMedianRow = ascenderRow;
+		const int maxMedianRow = baseline - std::round(ascent * (MEDIAN_ASCENDER_RATIO_AVG + 2 * MEDIAN_ASCENDER_RATIO_STDDEV));
 
 		//Find highest row below ascender with a mass exceeding threshold
-		for (int row = ascendingRow + 1; row < baseline; ++row)
+		for (int row = minMedianRow; row < maxMedianRow; ++row)
 		{
 			if (rowMasses.at<int>(row, 0) > massThreshold)
 			{
@@ -141,9 +149,16 @@ FontMetric::FontMetric(const cv::Mat &t_image, const cv::Rect t_bounds, const st
 	else if (capHeight == 0 && xHeight != 0)
 		capHeight = std::round(xHeight * CAPITAL_MEDIAN_RATIO_AVG);
 
+	//Create estimate of Cap height from Ascent
+	if (capHeight == 0 && ascent != 0)
+		capHeight = std::round(ascent * CAPITAL_ASCENDER_RATIO_AVG);
+	//Create estimate of x-height from Ascent
+	if (xHeight == 0 && ascent != 0)
+		xHeight = std::round(ascent * MEDIAN_ASCENDER_RATIO_AVG);
+
 	//Update bounds
-	bounds.y = bounds.y + baseline - capHeight;
-	baseline = capHeight;
+	bounds.y = bounds.y + baseline - std::max(ascent, capHeight);
+	baseline = std::max(ascent, capHeight);
 	bounds.height = baseline + descent;
 }
 

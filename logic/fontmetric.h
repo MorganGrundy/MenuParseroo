@@ -37,14 +37,19 @@ public:
 	void scale(const double factor);
 
 private:
+	//The ratios between capital/median and ascender
+	static constexpr double CAPITAL_ASCENDER_RATIO_AVG = 0.945951;
+	static constexpr double CAPITAL_ASCENDER_RATIO_STDDEV = 0.0310616;
+	static constexpr double MEDIAN_ASCENDER_RATIO_AVG = 0.708763;
+	static constexpr double MEDIAN_ASCENDER_RATIO_STDDEV = 0.0331565;
 	//The ratios between median and capital to use as fall back if only one value is calculated
 	static constexpr double MEDIAN_CAPITAL_RATIO_AVG = 0.750165;
 	static constexpr double MEDIAN_CAPITAL_RATIO_STDDEV = 0.044588;
 	static constexpr double CAPITAL_MEDIAN_RATIO_AVG = 1.33771;
 	static constexpr double CAPITAL_MEDIAN_RATIO_STDDEV = 0.592921;
 	//The ratios between capital/median and descender to use as fall back if descender not calculated
-	static constexpr double DESCENDER_CAPITAL_RATIO = 16.0 / 66.0;
-	static constexpr double DESCENDER_MEDIAN_RATIO = 16.0 / 50.0;
+	static constexpr double DESCENDER_CAPITAL_RATIO = 0.296263;
+	static constexpr double DESCENDER_MEDIAN_RATIO = 0.39692;
 
 	//Bounds of text in image
 	cv::Rect bounds;
