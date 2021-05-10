@@ -1,6 +1,6 @@
-#include "ocrgraphicsview.h"
-#include "imageutility.h"
-#include "maskpainterdialog.h"
+#include "OCRGraphicsView.h"
+#include "ImageUtility.h"
+#include "MaskPainterDialog.h"
 
 #include <iostream>
 

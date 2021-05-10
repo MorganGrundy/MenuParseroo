@@ -46,57 +46,60 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="gui\graphicsfontmetricitem.cpp">
+    <ClCompile Include="gui\GraphicsFontMetricItem.cpp">
       <Filter>Source Files\gui</Filter>
     </ClCompile>
     <ClCompile Include="main.cpp">
       <Filter>Source Files\gui</Filter>
     </ClCompile>
-    <ClCompile Include="gui\mainwindow.cpp">
+    <ClCompile Include="gui\MainWindow.cpp">
       <Filter>Source Files\gui</Filter>
     </ClCompile>
-    <ClCompile Include="gui\maskpainterdialog.cpp">
+    <ClCompile Include="gui\MaskPainterDialog.cpp">
       <Filter>Source Files\gui</Filter>
     </ClCompile>
-    <ClCompile Include="gui\maskpaintergraphicsview.cpp">
+    <ClCompile Include="gui\MaskPainterGraphicsView.cpp">
       <Filter>Source Files\gui</Filter>
     </ClCompile>
-    <ClCompile Include="gui\ocrgraphicsview.cpp">
+    <ClCompile Include="gui\OCRGraphicsView.cpp">
       <Filter>Source Files\gui</Filter>
     </ClCompile>
-    <ClCompile Include="gui\zoomablegraphicsview.cpp">
+    <ClCompile Include="gui\ZoomableGraphicsView.cpp">
       <Filter>Source Files\gui</Filter>
     </ClCompile>
-    <ClCompile Include="logic\charproperty.cpp">
+    <ClCompile Include="logic\CharProperty.cpp">
       <Filter>Source Files\logic</Filter>
     </ClCompile>
-    <ClCompile Include="logic\fontmetric.cpp">
+    <ClCompile Include="logic\FontMetric.cpp">
       <Filter>Source Files\logic</Filter>
     </ClCompile>
-    <ClCompile Include="logic\imageutility.cpp">
+    <ClCompile Include="logic\ImageUtility.cpp">
       <Filter>Source Files\logic</Filter>
     </ClCompile>
-    <ClCompile Include="logic\multiscaleocr.cpp">
+    <ClCompile Include="logic\MultiscaleOCR.cpp">
       <Filter>Source Files\logic</Filter>
+    </ClCompile>
+    <ClCompile Include="gui\ZoomableImageView.cpp">
+      <Filter>Source Files\gui</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="gui\graphicsfontmetricitem.h">
+    <ClInclude Include="gui\GraphicsFontMetricItem.h">
       <Filter>Header Files\gui</Filter>
     </ClInclude>
-    <ClInclude Include="gui\maskpaintergraphicsview.h">
+    <ClInclude Include="gui\MaskPainterGraphicsView.h">
       <Filter>Header Files\gui</Filter>
     </ClInclude>
-    <ClInclude Include="logic\charproperty.h">
+    <ClInclude Include="logic\CharProperty.h">
       <Filter>Header Files\logic</Filter>
     </ClInclude>
-    <ClInclude Include="logic\fontmetric.h">
+    <ClInclude Include="logic\FontMetric.h">
       <Filter>Header Files\logic</Filter>
     </ClInclude>
-    <ClInclude Include="logic\imageutility.h">
+    <ClInclude Include="logic\ImageUtility.h">
       <Filter>Header Files\logic</Filter>
     </ClInclude>
-    <ClInclude Include="logic\multiscaleocr.h">
+    <ClInclude Include="logic\MultiscaleOCR.h">
       <Filter>Header Files\logic</Filter>
     </ClInclude>
   </ItemGroup>
@@ -109,10 +112,10 @@
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
-    <QtUic Include="gui\mainwindow.ui">
+    <QtUic Include="gui\MainWindow.ui">
       <Filter>Form Files</Filter>
     </QtUic>
-    <QtUic Include="gui\maskpainterdialog.ui">
+    <QtUic Include="gui\MaskPainterDialog.ui">
       <Filter>Form Files</Filter>
     </QtUic>
   </ItemGroup>
@@ -131,16 +134,19 @@
     <ResourceCompile Include=".\MenuParseroo_resource.rc" />
   </ItemGroup>
   <ItemGroup>
-    <QtMoc Include="gui\mainwindow.h">
+    <QtMoc Include="gui\MainWindow.h">
       <Filter>Header Files\gui</Filter>
     </QtMoc>
-    <QtMoc Include="gui\maskpainterdialog.h">
+    <QtMoc Include="gui\MaskPainterDialog.h">
       <Filter>Header Files\gui</Filter>
     </QtMoc>
-    <QtMoc Include="gui\ocrgraphicsview.h">
+    <QtMoc Include="gui\OCRGraphicsView.h">
       <Filter>Header Files\gui</Filter>
     </QtMoc>
-    <QtMoc Include="gui\zoomablegraphicsview.h">
+    <QtMoc Include="gui\ZoomableGraphicsView.h">
+      <Filter>Header Files\gui</Filter>
+    </QtMoc>
+    <QtMoc Include="gui\ZoomableImageView.h">
       <Filter>Header Files\gui</Filter>
     </QtMoc>
   </ItemGroup>

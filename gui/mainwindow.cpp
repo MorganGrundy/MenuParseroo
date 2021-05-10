@@ -1,7 +1,7 @@
-#include "mainwindow.h"
+#include "MainWindow.h"
 #include "ui_mainwindow.h"
-#include "imageutility.h"
-#include "maskpainterdialog.h"
+#include "ImageUtility.h"
+#include "MaskPainterDialog.h"
 
 #include <QFileDialog>
 #include <QMessageBox>
@@ -18,19 +18,8 @@ MainWindow::MainWindow(QWidget *parent)
 {
 	ui->setupUi(this);
 
-	//Displays text from clicked text in OCRGraphicsView
-	connect(ui->graphicsView, SIGNAL(textBoundClicked(const QString)),
-		ui->textBrowser, SLOT(setText(const QString &)));
-
-	//Otsu's binarisation toggle
-	connect(ui->checkOtsu, &QCheckBox::toggled,
-		this, [=]() {setThreshold(ui->thresholdSlider->value()); });
-
 	//OCR
-	connect(ui->pushOCR, SIGNAL(released()), ui->graphicsView, SLOT(OCR()));
-
-	//Mask painter
-	connect(ui->pushPaintMask, SIGNAL(released()), ui->graphicsView, SLOT(editMask()));
+	//connect(ui->pushOCR, SIGNAL(released()), ui->graphicsView, SLOT(OCR()));
 }
 
 MainWindow::~MainWindow()
@@ -57,30 +46,7 @@ void MainWindow::loadImage()
 		else
 		{
 			//Set image
-			ui->graphicsView->setImage(image);
+			ui->graphicsView->setImage(ImageUtility::matToQPixmap(image));
 		}
 	}
-}
-
-//Sets threshold for thresholding image
-void MainWindow::setThreshold(const int threshold)
-{
-	ui->graphicsView->setThreshold(threshold, ui->checkOtsu->isChecked());
-}
-
-//Displayed image choice changed
-void MainWindow::imageChoiceChanged(QAbstractButton *button)
-{
-	if (button->text().contains("Original"))
-		ui->graphicsView->showImage(OCRGraphicsView::Image::Original);
-	else if (button->text().contains("Gray"))
-		ui->graphicsView->showImage(OCRGraphicsView::Image::Gray);
-	else if (button->text().contains("Threshold"))
-		ui->graphicsView->showImage(OCRGraphicsView::Image::Threshold);
-}
-
-//Modifies text from OCR
-void MainWindow::textChanged()
-{
-
 }

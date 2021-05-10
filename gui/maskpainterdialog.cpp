@@ -1,4 +1,4 @@
-#include "maskpainterdialog.h"
+#include "MaskPainterDialog.h"
 #include "ui_maskpainterdialog.h"
 
 #include <iostream>

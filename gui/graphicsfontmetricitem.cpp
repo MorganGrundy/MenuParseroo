@@ -1,4 +1,4 @@
-#include "graphicsfontmetricitem.h"
+#include "GraphicsFontMetricItem.h"
 
 GraphicsFontMetricItem::GraphicsFontMetricItem(const FontMetric &fontMetric, QGraphicsItem *parent)
 	: QGraphicsItem{ parent }, rect(fontMetric.getBounds().x, fontMetric.getBounds().y,

@@ -1,4 +1,4 @@
-#include "fontmetric.h"
+#include "FontMetric.h"
 
 #include <iostream>
 #include <cctype>

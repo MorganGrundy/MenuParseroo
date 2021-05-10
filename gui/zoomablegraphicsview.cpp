@@ -6,7 +6,7 @@ ZoomableGraphicsView::ZoomableGraphicsView(QWidget *parent) :
 	setCacheMode(CacheBackground);
 	setViewportUpdateMode(BoundingRectViewportUpdate);
 	setRenderHint(QPainter::RenderHint::Antialiasing);
-	setDragMode(NoDrag);
+	setDragMode(ScrollHandDrag);
 	setTransformationAnchor(ViewportAnchor::AnchorUnderMouse);
 
 	//Centres scene

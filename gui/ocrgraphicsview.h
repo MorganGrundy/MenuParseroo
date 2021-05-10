@@ -1,9 +1,9 @@
 #ifndef OCRGRAPHICSVIEW_H
 #define OCRGRAPHICSVIEW_H
 
-#include "graphicsfontmetricitem.h"
+#include "GraphicsFontMetricItem.h"
 #include "zoomablegraphicsview.h"
-#include "multiscaleocr.h"
+#include "MultiscaleOCR.h"
 
 #include <QGraphicsView>
 #include <QWheelEvent>

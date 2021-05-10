@@ -1,7 +1,7 @@
 #ifndef MULTISCALEOCR_H
 #define MULTISCALEOCR_H
 
-#include "fontmetric.h"
+#include "FontMetric.h"
 
 #include <vector>
 

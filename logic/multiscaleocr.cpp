@@ -1,4 +1,4 @@
-#include "multiscaleocr.h"
+#include "MultiscaleOCR.h"
 
 #include <iostream>
 

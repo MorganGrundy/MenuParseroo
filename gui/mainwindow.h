@@ -26,15 +26,6 @@ public slots:
 	//Prompts user for image
 	void loadImage();
 
-	//Sets threshold for thresholding image
-	void setThreshold(const int threshold);
-
-	//Displayed image choice changed
-	void imageChoiceChanged(QAbstractButton *button);
-
-	//Modifies text from OCR
-	void textChanged();
-
 private:
 	Ui::MainWindow *ui;
 };

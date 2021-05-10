@@ -1,4 +1,4 @@
-#include "maskpaintergraphicsview.h"
+#include "MaskPainterGraphicsView.h"
 
 #include <iostream>
 #include <queue>

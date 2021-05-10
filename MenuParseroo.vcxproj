@@ -191,34 +191,36 @@
     </QtMoc>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="logic\charproperty.cpp" />
-    <ClCompile Include="logic\fontmetric.cpp" />
-    <ClCompile Include="gui\graphicsfontmetricitem.cpp" />
-    <ClCompile Include="logic\imageutility.cpp" />
+    <ClCompile Include="gui\ZoomableImageView.cpp" />
+    <ClCompile Include="logic\CharProperty.cpp" />
+    <ClCompile Include="logic\FontMetric.cpp" />
+    <ClCompile Include="gui\GraphicsFontMetricItem.cpp" />
+    <ClCompile Include="logic\ImageUtility.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="gui\mainwindow.cpp" />
-    <ClCompile Include="gui\maskpainterdialog.cpp" />
-    <ClCompile Include="gui\maskpaintergraphicsview.cpp" />
-    <ClCompile Include="logic\multiscaleocr.cpp">
+    <ClCompile Include="gui\MainWindow.cpp" />
+    <ClCompile Include="gui\MaskPainterDialog.cpp" />
+    <ClCompile Include="gui\MaskPainterGraphicsView.cpp" />
+    <ClCompile Include="logic\MultiscaleOCR.cpp">
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Level3</WarningLevel>
     </ClCompile>
-    <ClCompile Include="gui\ocrgraphicsview.cpp" />
-    <ClCompile Include="gui\zoomablegraphicsview.cpp" />
+    <ClCompile Include="gui\OCRGraphicsView.cpp" />
+    <ClCompile Include="gui\ZoomableGraphicsView.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="logic\charproperty.h" />
-    <ClInclude Include="logic\fontmetric.h" />
-    <ClInclude Include="gui\graphicsfontmetricitem.h" />
-    <ClInclude Include="logic\imageutility.h" />
-    <QtMoc Include="gui\mainwindow.h">
+    <ClInclude Include="logic\CharProperty.h" />
+    <ClInclude Include="logic\FontMetric.h" />
+    <ClInclude Include="gui\GraphicsFontMetricItem.h" />
+    <ClInclude Include="logic\ImageUtility.h" />
+    <QtMoc Include="gui\ZoomableImageView.h" />
+    <QtMoc Include="gui\MainWindow.h">
     </QtMoc>
-    <QtMoc Include="gui\maskpainterdialog.h">
+    <QtMoc Include="gui\MaskPainterDialog.h">
     </QtMoc>
-    <ClInclude Include="gui\maskpaintergraphicsview.h" />
-    <ClInclude Include="logic\multiscaleocr.h" />
-    <QtMoc Include="gui\ocrgraphicsview.h">
+    <ClInclude Include="gui\MaskPainterGraphicsView.h" />
+    <ClInclude Include="logic\MultiscaleOCR.h" />
+    <QtMoc Include="gui\OCRGraphicsView.h">
     </QtMoc>
-    <QtMoc Include="gui\zoomablegraphicsview.h">
+    <QtMoc Include="gui\ZoomableGraphicsView.h">
     </QtMoc>
   </ItemGroup>
   <ItemGroup>
@@ -240,9 +242,9 @@
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
-    <QtUic Include="gui\mainwindow.ui">
+    <QtUic Include="gui\MainWindow.ui">
     </QtUic>
-    <QtUic Include="gui\maskpainterdialog.ui">
+    <QtUic Include="gui\MaskPainterDialog.ui">
     </QtUic>
   </ItemGroup>
   <ItemGroup>
