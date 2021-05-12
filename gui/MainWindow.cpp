@@ -24,6 +24,10 @@ MainWindow::MainWindow(QWidget *parent)
 	model = new PreprocessStepsTableModel();
 	ui->tableView->setModel(model);
 
+	//Insert data into model
+	for (int i = 0; i < 5; ++i)
+		model->addStep(i, "Test data " + QString::number(i));
+
 	//Resize table view width to fit model
 	int width = 0;
 	for (int col = 0; col < model->columnCount(); ++col)

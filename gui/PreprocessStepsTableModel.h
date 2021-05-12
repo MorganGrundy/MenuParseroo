@@ -19,6 +19,8 @@ public:
 	int columnCount(const QModelIndex &parent = QModelIndex()) const;
 
 	bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole);
+	bool insertStep(int row, const QString &step);
+	bool removeStep(int row);
 
 private:
 	QList<QString /*PreprocessStep*/> m_steps;

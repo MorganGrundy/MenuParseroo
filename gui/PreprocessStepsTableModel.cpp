@@ -3,11 +3,6 @@
 PreprocessStepsTableModel::PreprocessStepsTableModel(QObject *parent)
 	: QAbstractTableModel(parent)
 {
-	m_steps.append("Data 1");
-	m_steps.append("Data 2");
-	m_steps.append("Data 3");
-	m_steps.append("Data 4");
-	m_steps.append("Data 5");
 }
 
 PreprocessStepsTableModel::~PreprocessStepsTableModel()
@@ -105,4 +100,24 @@ bool PreprocessStepsTableModel::setData(const QModelIndex &index, const QVariant
 	}
 
 	return false;
+}
+
+bool PreprocessStepsTableModel::insertStep(int row, const QString &step)
+{
+	beginInsertRows(QModelIndex(), row, row);
+
+	m_steps.insert(row, step);
+
+	endInsertRows();
+	return true;
+}
+
+bool PreprocessStepsTableModel::removeStep(int row)
+{
+	beginRemoveRows(QModelIndex(), row, row);
+
+	m_steps.removeAt(row);
+
+	endRemoveRows();
+	return true;
 }
