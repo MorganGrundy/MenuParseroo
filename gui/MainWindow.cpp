@@ -8,6 +8,7 @@
 #include <QDir>
 #include <QGraphicsPixmapItem>
 #include <QStringListModel>
+#include <QHeaderView>
 
 #include <iostream>
 
@@ -19,12 +20,15 @@ MainWindow::MainWindow(QWidget *parent)
 {
 	ui->setupUi(this);
 
+	//Create model
 	model = new PreprocessStepsTableModel();
 	ui->tableView->setModel(model);
 
-	//OCR
-	//connect(ui->pushOCR, SIGNAL(released()), ui->graphicsView, SLOT(OCR()));
-
+	//Resize table view width to fit model
+	int width = 0;
+	for (int col = 0; col < model->columnCount(); ++col)
+		width += ui->tableView->columnWidth(col) + 2;
+	ui->tableView->setMinimumWidth(width);
 }
 
 MainWindow::~MainWindow()
