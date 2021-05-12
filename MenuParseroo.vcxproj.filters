@@ -82,6 +82,9 @@
     <ClCompile Include="gui\ZoomableImageView.cpp">
       <Filter>Source Files\gui</Filter>
     </ClCompile>
+    <ClCompile Include="gui\PreprocessStepsTableModel.cpp">
+      <Filter>Source Files\gui</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="gui\GraphicsFontMetricItem.h">
@@ -147,6 +150,9 @@
       <Filter>Header Files\gui</Filter>
     </QtMoc>
     <QtMoc Include="gui\ZoomableImageView.h">
+      <Filter>Header Files\gui</Filter>
+    </QtMoc>
+    <QtMoc Include="gui\PreprocessStepsTableModel.h">
       <Filter>Header Files\gui</Filter>
     </QtMoc>
   </ItemGroup>

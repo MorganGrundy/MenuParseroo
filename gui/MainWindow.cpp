@@ -7,6 +7,7 @@
 #include <QMessageBox>
 #include <QDir>
 #include <QGraphicsPixmapItem>
+#include <QStringListModel>
 
 #include <iostream>
 
@@ -18,12 +19,17 @@ MainWindow::MainWindow(QWidget *parent)
 {
 	ui->setupUi(this);
 
+	model = new PreprocessStepsTableModel();
+	ui->tableView->setModel(model);
+
 	//OCR
 	//connect(ui->pushOCR, SIGNAL(released()), ui->graphicsView, SLOT(OCR()));
+
 }
 
 MainWindow::~MainWindow()
 {
+	delete model;
 	delete ui;
 }
 

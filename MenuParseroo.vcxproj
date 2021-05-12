@@ -205,12 +205,14 @@
     </ClCompile>
     <ClCompile Include="gui\OCRGraphicsView.cpp" />
     <ClCompile Include="gui\ZoomableGraphicsView.cpp" />
+    <ClCompile Include="gui\PreprocessStepsTableModel.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="logic\CharProperty.h" />
     <ClInclude Include="logic\FontMetric.h" />
     <ClInclude Include="gui\GraphicsFontMetricItem.h" />
     <ClInclude Include="logic\ImageUtility.h" />
+    <QtMoc Include="gui\PreprocessStepsTableModel.h" />
     <QtMoc Include="gui\ZoomableImageView.h" />
     <QtMoc Include="gui\MainWindow.h">
     </QtMoc>
