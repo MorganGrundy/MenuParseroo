@@ -1,6 +1,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 #include "PreprocessStepsTableModel.h"
+#include "PreprocessStepsDelegate.h"
 
 #include <QMainWindow>
 #include <QGraphicsScene>
@@ -30,5 +31,6 @@ public slots:
 private:
 	Ui::MainWindow *ui;
 	PreprocessStepsTableModel *model;
+	PreprocessStepsDelegate *delegate;
 };
 #endif // MAINWINDOW_H

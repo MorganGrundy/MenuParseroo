@@ -24,9 +24,14 @@ MainWindow::MainWindow(QWidget *parent)
 	model = new PreprocessStepsTableModel();
 	ui->tableView->setModel(model);
 
+	//Create delegate
+	delegate = new PreprocessStepsDelegate();
+	ui->tableView->setItemDelegate(delegate);
+
 	//Insert data into model
 	for (int i = 0; i < 5; ++i)
 		model->insertStep(i, "Test data " + QString::number(i));
+	ui->tableView->resizeColumnsToContents();
 
 	//Resize table view width to fit model
 	int width = 0;
@@ -35,6 +40,7 @@ MainWindow::MainWindow(QWidget *parent)
 	ui->tableView->setMinimumWidth(width);
 
 	ui->tableView->setSelectionMode(QAbstractItemView::SelectionMode::SingleSelection);
+	ui->tableView->setShowGrid(false);
 }
 
 MainWindow::~MainWindow()
