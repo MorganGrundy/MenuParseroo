@@ -82,7 +82,7 @@
     <ClCompile Include="gui\ZoomableImageView.cpp">
       <Filter>Source Files\gui</Filter>
     </ClCompile>
-    <ClCompile Include="gui\PreprocessStepsTableModel.cpp">
+    <ClCompile Include="gui\PreprocessStepsListModel.cpp">
       <Filter>Source Files\gui</Filter>
     </ClCompile>
     <ClCompile Include="gui\PreprocessStepsDelegate.cpp">
@@ -155,7 +155,7 @@
     <QtMoc Include="gui\ZoomableImageView.h">
       <Filter>Header Files\gui</Filter>
     </QtMoc>
-    <QtMoc Include="gui\PreprocessStepsTableModel.h">
+    <QtMoc Include="gui\PreprocessStepsListModel.h">
       <Filter>Header Files\gui</Filter>
     </QtMoc>
     <QtMoc Include="gui\PreprocessStepsDelegate.h">

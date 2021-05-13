@@ -9,6 +9,7 @@
 #include <QGraphicsPixmapItem>
 #include <QStringListModel>
 #include <QHeaderView>
+#include <QUndoView>
 
 #include <iostream>
 
@@ -21,26 +22,22 @@ MainWindow::MainWindow(QWidget *parent)
 	ui->setupUi(this);
 
 	//Create model
-	model = new PreprocessStepsTableModel();
-	ui->tableView->setModel(model);
+	model = new PreprocessStepsListModel();
+	ui->listView->setModel(model);
 
 	//Create delegate
 	delegate = new PreprocessStepsDelegate();
-	ui->tableView->setItemDelegate(delegate);
+	ui->listView->setItemDelegate(delegate);
 
 	//Insert data into model
 	for (int i = 0; i < 5; ++i)
 		model->insertStep(i, "Test data " + QString::number(i));
-	ui->tableView->resizeColumnsToContents();
 
 	//Resize table view width to fit model
-	int width = 0;
-	for (int col = 0; col < model->columnCount(); ++col)
-		width += ui->tableView->columnWidth(col) + 2;
-	ui->tableView->setMinimumWidth(width);
+	int width = 100;
+	ui->listView->setMinimumWidth(width);
 
-	ui->tableView->setSelectionMode(QAbstractItemView::SelectionMode::SingleSelection);
-	ui->tableView->setShowGrid(false);
+	ui->listView->setSelectionMode(QAbstractItemView::SelectionMode::SingleSelection);
 }
 
 MainWindow::~MainWindow()

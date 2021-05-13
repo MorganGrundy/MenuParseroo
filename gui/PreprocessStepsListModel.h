@@ -1,14 +1,14 @@
 #pragma once
 
-#include <QAbstractTableModel>
+#include <QAbstractListModel>
 
-class PreprocessStepsTableModel : public QAbstractTableModel
+class PreprocessStepsListModel : public QAbstractListModel
 {
 	Q_OBJECT
 
 public:
-	PreprocessStepsTableModel(QObject *parent = nullptr);
-	~PreprocessStepsTableModel();
+	PreprocessStepsListModel(QObject *parent = nullptr);
+	~PreprocessStepsListModel();
 
 	Qt::ItemFlags flags(const QModelIndex &index) const override;
 

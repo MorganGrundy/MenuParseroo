@@ -1,6 +1,7 @@
 #include "PreprocessStepsDelegate.h"
+#include "PreprocessStepsListModel.h"
 
-#include <QSpinBox>
+#include <QCheckBox>
 
 PreprocessStepsDelegate::PreprocessStepsDelegate(QObject *parent)
 	: QStyledItemDelegate(parent)
@@ -13,27 +14,23 @@ PreprocessStepsDelegate::~PreprocessStepsDelegate()
 
 QWidget *PreprocessStepsDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
-	QSpinBox *editor = new QSpinBox(parent);
-	editor->setFrame(false);
-	editor->setMinimum(0);
-	editor->setMaximum(100);
+	QCheckBox *editor = new QCheckBox(parent);
 
 	return editor;
 }
 
 void PreprocessStepsDelegate::setEditorData(QWidget *editor, const QModelIndex &index) const
 {
-	int value = index.model()->data(index, Qt::EditRole).toInt();
+	bool value = index.model()->data(index, Qt::EditRole).toBool();
 
-	QSpinBox *spinBox = static_cast<QSpinBox *>(editor);
-	spinBox->setValue(value);
+	QCheckBox *spinBox = static_cast<QCheckBox *>(editor);
+	spinBox->setChecked(value);
 }
 
 void PreprocessStepsDelegate::setModelData(QWidget * editor, QAbstractItemModel * model, const QModelIndex & index) const
 {
-	QSpinBox *spinBox = static_cast<QSpinBox *>(editor);
-	spinBox->interpretText();
-	int value = spinBox->value();
+	QCheckBox *spinBox = static_cast<QCheckBox *>(editor);
+	QString value = spinBox->isChecked() ? "Active" : "Inactive";
 
 	model->setData(index, value, Qt::EditRole);
 }
