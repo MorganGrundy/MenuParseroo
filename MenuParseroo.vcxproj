@@ -191,6 +191,7 @@
     </QtMoc>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="gui\PreprocessStepWidget.cpp" />
     <ClCompile Include="gui\ZoomableImageView.cpp" />
     <ClCompile Include="logic\CharProperty.cpp" />
     <ClCompile Include="logic\FontMetric.cpp" />
@@ -209,6 +210,7 @@
     <ClCompile Include="gui\PreprocessStepsDelegate.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <QtMoc Include="gui\PreprocessStepWidget.h" />
     <ClInclude Include="logic\CharProperty.h" />
     <ClInclude Include="logic\FontMetric.h" />
     <ClInclude Include="gui\GraphicsFontMetricItem.h" />
