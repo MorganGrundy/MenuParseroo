@@ -68,13 +68,48 @@
        </widget>
       </item>
       <item>
-       <widget class="QListView" name="listView">
+       <widget class="QScrollArea" name="preprocessStepScroll">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
+        <property name="minimumSize">
+         <size>
+          <width>200</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="widgetResizable">
+         <bool>true</bool>
+        </property>
+        <widget class="QWidget" name="scrollAreaWidgetContents">
+         <property name="geometry">
+          <rect>
+           <x>0</x>
+           <y>0</y>
+           <width>198</width>
+           <height>626</height>
+          </rect>
+         </property>
+         <widget class="PreprocessStepListWidget" name="preprocessStepList" native="true">
+          <property name="geometry">
+           <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>200</width>
+            <height>100</height>
+           </rect>
+          </property>
+          <property name="autoFillBackground">
+           <bool>false</bool>
+          </property>
+          <property name="styleSheet">
+           <string notr="true"/>
+          </property>
+         </widget>
+        </widget>
        </widget>
       </item>
      </layout>
@@ -98,6 +133,12 @@
    <class>ZoomableImageView</class>
    <extends>QGraphicsView</extends>
    <header>ZoomableImageView.h</header>
+  </customwidget>
+  <customwidget>
+   <class>PreprocessStepListWidget</class>
+   <extends>QWidget</extends>
+   <header>PreprocessStepListWidget.h</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources/>

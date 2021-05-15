@@ -1,0 +1,24 @@
+#pragma once
+#include "PreprocessStepWidget.h"
+
+#include <QWidget>
+#include <QVBoxLayout>
+
+class PreprocessStepListWidget : public QWidget
+{
+	Q_OBJECT
+
+public:
+	PreprocessStepListWidget(QWidget *parent);
+	~PreprocessStepListWidget();
+
+	//Creates a preprocessing step and adds it to list
+	void addStep();
+
+	//Resizes widget to fit contents
+	void fitToContents();
+
+private:
+	QVBoxLayout *m_layout;
+	QList<PreprocessStepWidget *> m_steps;
+};

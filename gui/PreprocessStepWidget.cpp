@@ -3,29 +3,20 @@
 PreprocessStepWidget::PreprocessStepWidget(QWidget *parent)
 	: QWidget(parent)
 {
-	layout = new QHBoxLayout(this);
-	setLayout(layout);
+	//Create layout
+	m_layout = new QHBoxLayout(this);
 
-	nameLabel = new QLabel("Name");
-	button = new QPushButton("Button");
+	//Create label and button
+	m_label = new QLabel("Test Label", this);
+	m_button = new QPushButton("Test Button", this);
 
-	layout->addWidget(nameLabel);
-	layout->addWidget(button);
+	//Add to layout
+	m_layout->addWidget(m_label);
+	m_layout->addWidget(m_button);
 }
 
 PreprocessStepWidget::~PreprocessStepWidget()
 {
-	delete button;
-	delete nameLabel;
-	delete layout;
-}
-
-void PreprocessStepWidget::setName(const QString &name)
-{
-	nameLabel->setText(name);
-}
-
-QString PreprocessStepWidget::getName() const
-{
-	return nameLabel->text();
+	delete m_label;
+	delete m_layout;
 }

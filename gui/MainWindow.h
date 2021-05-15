@@ -1,11 +1,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
-#include "PreprocessStepsListModel.h"
-#include "PreprocessStepsDelegate.h"
-
 #include <QMainWindow>
 #include <QGraphicsScene>
-#include <QAbstractButton>
 
 #include <opencv2/core.hpp>
 
@@ -30,7 +26,5 @@ public slots:
 
 private:
 	Ui::MainWindow *ui;
-	PreprocessStepsListModel *model;
-	PreprocessStepsDelegate *delegate;
 };
 #endif // MAINWINDOW_H

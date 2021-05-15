@@ -191,7 +191,6 @@
     </QtMoc>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="gui\PreprocessStepWidget.cpp" />
     <ClCompile Include="gui\ZoomableImageView.cpp" />
     <ClCompile Include="logic\CharProperty.cpp" />
     <ClCompile Include="logic\FontMetric.cpp" />
@@ -206,17 +205,16 @@
     </ClCompile>
     <ClCompile Include="gui\OCRGraphicsView.cpp" />
     <ClCompile Include="gui\ZoomableGraphicsView.cpp" />
-    <ClCompile Include="gui\PreprocessStepsListModel.cpp" />
-    <ClCompile Include="gui\PreprocessStepsDelegate.cpp" />
+    <ClCompile Include="gui\PreprocessStepListWidget.cpp" />
+    <ClCompile Include="gui\PreprocessStepWidget.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <QtMoc Include="gui\PreprocessStepWidget.h" />
     <ClInclude Include="logic\CharProperty.h" />
     <ClInclude Include="logic\FontMetric.h" />
     <ClInclude Include="gui\GraphicsFontMetricItem.h" />
     <ClInclude Include="logic\ImageUtility.h" />
-    <QtMoc Include="gui\PreprocessStepsDelegate.h" />
-    <QtMoc Include="gui\PreprocessStepsListModel.h" />
+    <QtMoc Include="gui\PreprocessStepWidget.h" />
+    <QtMoc Include="gui\PreprocessStepListWidget.h" />
     <QtMoc Include="gui\ZoomableImageView.h" />
     <QtMoc Include="gui\MainWindow.h">
     </QtMoc>

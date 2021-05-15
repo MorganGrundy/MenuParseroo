@@ -82,10 +82,7 @@
     <ClCompile Include="gui\ZoomableImageView.cpp">
       <Filter>Source Files\gui</Filter>
     </ClCompile>
-    <ClCompile Include="gui\PreprocessStepsListModel.cpp">
-      <Filter>Source Files\gui</Filter>
-    </ClCompile>
-    <ClCompile Include="gui\PreprocessStepsDelegate.cpp">
+    <ClCompile Include="gui\PreprocessStepListWidget.cpp">
       <Filter>Source Files\gui</Filter>
     </ClCompile>
     <ClCompile Include="gui\PreprocessStepWidget.cpp">
@@ -158,10 +155,7 @@
     <QtMoc Include="gui\ZoomableImageView.h">
       <Filter>Header Files\gui</Filter>
     </QtMoc>
-    <QtMoc Include="gui\PreprocessStepsListModel.h">
-      <Filter>Header Files\gui</Filter>
-    </QtMoc>
-    <QtMoc Include="gui\PreprocessStepsDelegate.h">
+    <QtMoc Include="gui\PreprocessStepListWidget.h">
       <Filter>Header Files\gui</Filter>
     </QtMoc>
     <QtMoc Include="gui\PreprocessStepWidget.h">

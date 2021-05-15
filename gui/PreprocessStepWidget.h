@@ -10,14 +10,11 @@ class PreprocessStepWidget : public QWidget
 	Q_OBJECT
 
 public:
-	PreprocessStepWidget(QWidget *parent = nullptr);
+	PreprocessStepWidget(QWidget *parent);
 	~PreprocessStepWidget();
 
-	void setName(const QString &name);
-	QString getName() const;
-
 private:
-	QHBoxLayout *layout;
-	QLabel *nameLabel;
-	QPushButton *button;
+	QHBoxLayout *m_layout;
+	QLabel *m_label;
+	QPushButton *m_button;
 };

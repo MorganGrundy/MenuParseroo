@@ -6,10 +6,6 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QDir>
-#include <QGraphicsPixmapItem>
-#include <QStringListModel>
-#include <QHeaderView>
-#include <QUndoView>
 
 #include <iostream>
 
@@ -20,29 +16,10 @@ MainWindow::MainWindow(QWidget *parent)
 	: QMainWindow(parent), ui(new Ui::MainWindow)
 {
 	ui->setupUi(this);
-
-	//Create model
-	model = new PreprocessStepsListModel();
-	ui->listView->setModel(model);
-
-	//Create delegate
-	delegate = new PreprocessStepsDelegate();
-	ui->listView->setItemDelegate(delegate);
-
-	//Insert data into model
-	for (int i = 0; i < 5; ++i)
-		model->insertStep(i, "Test data " + QString::number(i));
-
-	//Resize table view width to fit model
-	int width = 100;
-	ui->listView->setMinimumWidth(width);
-
-	ui->listView->setSelectionMode(QAbstractItemView::SelectionMode::SingleSelection);
 }
 
 MainWindow::~MainWindow()
 {
-	delete model;
 	delete ui;
 }
 
