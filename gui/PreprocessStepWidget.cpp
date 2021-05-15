@@ -6,8 +6,8 @@ PreprocessStepWidget::PreprocessStepWidget(QWidget *parent)
 	layout = new QHBoxLayout(this);
 	setLayout(layout);
 
-	nameLabel = new QLabel("Name", this);
-	button = new QPushButton("Button", this);
+	nameLabel = new QLabel("Name");
+	button = new QPushButton("Button");
 
 	layout->addWidget(nameLabel);
 	layout->addWidget(button);

@@ -10,7 +10,7 @@ class PreprocessStepWidget : public QWidget
 	Q_OBJECT
 
 public:
-	PreprocessStepWidget(QWidget *parent);
+	PreprocessStepWidget(QWidget *parent = nullptr);
 	~PreprocessStepWidget();
 
 	void setName(const QString &name);
