@@ -24,4 +24,28 @@ void PreprocessStepListWidget::addStep()
 	PreprocessStepWidget *newStep = new PreprocessStepWidget(this);
 	m_steps.append(newStep);
 	m_layout->addWidget(newStep);
+
+	//Connect signals for changing step order
+	connect(newStep, &PreprocessStepWidget::moveUp,
+		this, [=]() { moveStep(newStep, Direction::Up); });
+	connect(newStep, &PreprocessStepWidget::moveDown,
+		this, [=]() { moveStep(newStep, Direction::Down); });
+}
+
+//Moves step in direction
+void PreprocessStepListWidget::moveStep(PreprocessStepWidget *step, const Direction dir)
+{
+	//Get current and new index of step
+	int index = m_steps.indexOf(step);
+	int newIndex = std::clamp(index + static_cast<int>(dir), 0, m_steps.size() - 1);
+
+	//If index is unchanged then skip
+	if (newIndex == index)
+		return;
+
+	m_steps.move(index, newIndex);
+
+	//Move step in layout
+	m_layout->removeWidget(step);
+	m_layout->insertWidget(newIndex, step);
 }

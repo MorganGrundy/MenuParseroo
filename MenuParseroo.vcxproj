@@ -207,12 +207,14 @@
     <ClCompile Include="gui\ZoomableGraphicsView.cpp" />
     <ClCompile Include="gui\PreprocessStepListWidget.cpp" />
     <ClCompile Include="gui\PreprocessStepWidget.cpp" />
+    <ClCompile Include="gui\UpDownButton.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="logic\CharProperty.h" />
     <ClInclude Include="logic\FontMetric.h" />
     <ClInclude Include="gui\GraphicsFontMetricItem.h" />
     <ClInclude Include="logic\ImageUtility.h" />
+    <QtMoc Include="gui\UpDownButton.h" />
     <QtMoc Include="gui\PreprocessStepWidget.h" />
     <QtMoc Include="gui\PreprocessStepListWidget.h" />
     <QtMoc Include="gui\ZoomableImageView.h" />
@@ -250,6 +252,7 @@
     </QtUic>
     <QtUic Include="gui\MaskPainterDialog.ui">
     </QtUic>
+    <QtUic Include="gui\UpDownButton.ui" />
   </ItemGroup>
   <ItemGroup>
     <None Include="data\eng.user-patterns" />
@@ -258,6 +261,9 @@
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include=".\MenuParseroo_resource.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <QtRcc Include="Resource.qrc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">

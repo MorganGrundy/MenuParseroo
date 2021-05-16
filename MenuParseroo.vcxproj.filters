@@ -88,6 +88,9 @@
     <ClCompile Include="gui\PreprocessStepWidget.cpp">
       <Filter>Source Files\gui</Filter>
     </ClCompile>
+    <ClCompile Include="gui\UpDownButton.cpp">
+      <Filter>Source Files\gui</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="gui\GraphicsFontMetricItem.h">
@@ -122,6 +125,9 @@
       <Filter>Form Files</Filter>
     </QtUic>
     <QtUic Include="gui\MaskPainterDialog.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+    <QtUic Include="gui\UpDownButton.ui">
       <Filter>Form Files</Filter>
     </QtUic>
   </ItemGroup>
@@ -161,5 +167,11 @@
     <QtMoc Include="gui\PreprocessStepWidget.h">
       <Filter>Header Files\gui</Filter>
     </QtMoc>
+    <QtMoc Include="gui\UpDownButton.h">
+      <Filter>Header Files\gui</Filter>
+    </QtMoc>
+  </ItemGroup>
+  <ItemGroup>
+    <QtRcc Include="Resource.qrc" />
   </ItemGroup>
 </Project>

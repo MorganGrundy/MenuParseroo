@@ -1,4 +1,5 @@
 #pragma once
+#include "UpDownButton.h"
 
 #include <QFrame>
 #include <QHBoxLayout>
@@ -13,8 +14,14 @@ public:
 	PreprocessStepWidget(QWidget *parent);
 	~PreprocessStepWidget();
 
+signals:
+	void moveUp();
+	void moveDown();
+
 private:
 	QHBoxLayout *m_layout;
+	UpDownButton *m_upDownButton;
 	QLabel *m_label;
-	QPushButton *m_button;
+
+	static int id;
 };
