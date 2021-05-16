@@ -1,8 +1,14 @@
 #include "PreprocessStepWidget.h"
 
 PreprocessStepWidget::PreprocessStepWidget(QWidget *parent)
-	: QWidget(parent)
+	: QFrame(parent)
 {
+	//Set style
+	setFrameStyle(QFrame::Panel | QFrame::Raised);
+	setStyleSheet("PreprocessStepWidget {"
+		"background-color: qlineargradient(spread:pad, x1:0, y1:1, x2:0, y2:0, stop:0 rgba(200, 200, 200, 100), "
+		"stop:1 rgba(255, 255, 255, 100)); }");
+
 	//Create layout
 	m_layout = new QHBoxLayout(this);
 

@@ -1,11 +1,11 @@
 #pragma once
 
-#include <QWidget>
+#include <QFrame>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QPushButton>
 
-class PreprocessStepWidget : public QWidget
+class PreprocessStepWidget : public QFrame
 {
 	Q_OBJECT
 
