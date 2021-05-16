@@ -7,8 +7,7 @@ PreprocessStepListWidget::PreprocessStepListWidget(QWidget *parent)
 	m_layout->setSpacing(0);
 	m_layout->setMargin(0);
 
-	addStep();
-	addStep();
+	fitToContents();
 }
 
 PreprocessStepListWidget::~PreprocessStepListWidget()
@@ -20,6 +19,13 @@ PreprocessStepListWidget::~PreprocessStepListWidget()
 	delete m_layout;
 }
 
+//Resizes widget to fit contents
+void PreprocessStepListWidget::fitToContents()
+{
+	int height = m_steps.empty() ? 0 : m_steps.first()->sizeHint().height() * m_steps.size();
+	resize(width(), height);
+}
+
 //Creates a preprocessing step and adds it to list
 void PreprocessStepListWidget::addStep()
 {
@@ -29,11 +35,4 @@ void PreprocessStepListWidget::addStep()
 	m_layout->addWidget(newStep);
 
 	fitToContents();
-}
-
-//Resizes widget to fit contents
-void PreprocessStepListWidget::fitToContents()
-{
-	int height = m_steps.empty() ? 0 : m_steps.first()->sizeHint().height() * m_steps.size();
-	resize(width(), height);
 }

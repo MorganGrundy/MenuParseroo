@@ -44,6 +44,13 @@
        </spacer>
       </item>
       <item>
+       <widget class="QPushButton" name="pushAddStep">
+        <property name="text">
+         <string>Add Step</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QPushButton" name="pushOCR">
         <property name="text">
          <string>OCR Image</string>
@@ -139,6 +146,9 @@
    <extends>QWidget</extends>
    <header>PreprocessStepListWidget.h</header>
    <container>1</container>
+   <slots>
+    <slot>addStep()</slot>
+   </slots>
   </customwidget>
  </customwidgets>
  <resources/>
@@ -156,6 +166,22 @@
     <hint type="destinationlabel">
      <x>639</x>
      <y>359</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushAddStep</sender>
+   <signal>released()</signal>
+   <receiver>preprocessStepList</receiver>
+   <slot>addStep()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1124</x>
+     <y>39</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1117</x>
+     <y>141</y>
     </hint>
    </hints>
   </connection>

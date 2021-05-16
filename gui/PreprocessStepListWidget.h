@@ -12,11 +12,12 @@ public:
 	PreprocessStepListWidget(QWidget *parent);
 	~PreprocessStepListWidget();
 
-	//Creates a preprocessing step and adds it to list
-	void addStep();
-
 	//Resizes widget to fit contents
 	void fitToContents();
+
+public slots:
+	//Creates a preprocessing step and adds it to list
+	void addStep();
 
 private:
 	QVBoxLayout *m_layout;
