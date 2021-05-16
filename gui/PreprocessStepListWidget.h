@@ -12,9 +12,6 @@ public:
 	PreprocessStepListWidget(QWidget *parent);
 	~PreprocessStepListWidget();
 
-	//Resizes widget to fit contents
-	void fitToContents();
-
 public slots:
 	//Creates a preprocessing step and adds it to list
 	void addStep();
