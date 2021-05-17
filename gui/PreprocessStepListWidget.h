@@ -21,6 +21,9 @@ public slots:
 	//Moves step in direction
 	void moveStep(PreprocessStepWidget *step, const Direction dir);
 
+	//Deletes step
+	void deleteStep(PreprocessStepWidget *step);
+
 private:
 	QVBoxLayout *m_layout;
 	QList<PreprocessStepWidget *> m_steps;

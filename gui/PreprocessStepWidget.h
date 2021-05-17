@@ -18,10 +18,13 @@ signals:
 	void moveUp();
 	void moveDown();
 
+	void deleteReleased();
+
 private:
 	QHBoxLayout *m_layout;
 	UpDownButton *m_upDownButton;
 	QLabel *m_label;
+	QPushButton *m_delButton;
 
 	static int id;
 };

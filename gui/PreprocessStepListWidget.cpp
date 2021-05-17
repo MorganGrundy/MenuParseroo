@@ -30,6 +30,10 @@ void PreprocessStepListWidget::addStep()
 		this, [=]() { moveStep(newStep, Direction::Up); });
 	connect(newStep, &PreprocessStepWidget::moveDown,
 		this, [=]() { moveStep(newStep, Direction::Down); });
+
+	//Connect signal for deleting step
+	connect(newStep, &PreprocessStepWidget::deleteReleased,
+		this, [=]() { deleteStep(newStep); });
 }
 
 //Moves step in direction
@@ -48,4 +52,12 @@ void PreprocessStepListWidget::moveStep(PreprocessStepWidget *step, const Direct
 	//Move step in layout
 	m_layout->removeWidget(step);
 	m_layout->insertWidget(newIndex, step);
+}
+
+//Deletes step
+void PreprocessStepListWidget::deleteStep(PreprocessStepWidget *step)
+{
+	m_steps.removeOne(step);
+	m_layout->removeWidget(step);
+	delete step;
 }

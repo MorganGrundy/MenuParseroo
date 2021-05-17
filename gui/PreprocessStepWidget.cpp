@@ -15,24 +15,38 @@ PreprocessStepWidget::PreprocessStepWidget(QWidget *parent)
 	m_layout = new QHBoxLayout(this);
 	m_layout->setMargin(0);
 
-	//Create Up/Down button and label
+	//Create Up/Down button
 	m_upDownButton = new UpDownButton(this);
-	m_label = new QLabel("Test Label " + QString::number(id++), this);
-
-	//Add to layout
 	m_layout->addWidget(m_upDownButton);
+
+	//Create label
+	m_label = new QLabel("Test Label " + QString::number(id++), this);
 	m_layout->addWidget(m_label);
 
-	//Emit signals for moving item
+	//Create delete button
+	m_delButton = new QPushButton(this);
+	m_delButton->setStyleSheet("background-color: rgba(255, 255, 255, 0);");
+	QIcon deleteIcon(":/gui/DeleteButton.png");
+	deleteIcon.addFile(":/gui/DeleteButtonActive.png", QSize(), QIcon::Active, QIcon::State::Off);
+	m_delButton->setIcon(deleteIcon);
+	m_delButton->setIconSize(QSize(24, 24));
+	m_layout->addWidget(m_delButton);
+
+	//Connect signals for moving item
 	connect(m_upDownButton, SIGNAL(up()),
 		this, SIGNAL(moveUp()));
 	connect(m_upDownButton, SIGNAL(down()),
 		this, SIGNAL(moveDown()));
+
+	//Connect signals for deleting item
+	connect(m_delButton, SIGNAL(released()),
+		this, SIGNAL(deleteReleased()));
 }
 
 PreprocessStepWidget::~PreprocessStepWidget()
 {
 	delete m_upDownButton;
 	delete m_label;
+	delete m_delButton;
 	delete m_layout;
 }
