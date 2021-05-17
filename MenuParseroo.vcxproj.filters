@@ -91,6 +91,9 @@
     <ClCompile Include="gui\UpDownButton.cpp">
       <Filter>Source Files\gui</Filter>
     </ClCompile>
+    <ClCompile Include="logic\PreprocessStep.cpp">
+      <Filter>Source Files\logic</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="gui\GraphicsFontMetricItem.h">
@@ -109,6 +112,9 @@
       <Filter>Header Files\logic</Filter>
     </ClInclude>
     <ClInclude Include="logic\MultiscaleOCR.h">
+      <Filter>Header Files\logic</Filter>
+    </ClInclude>
+    <ClInclude Include="logic\PreprocessStep.h">
       <Filter>Header Files\logic</Filter>
     </ClInclude>
   </ItemGroup>
@@ -172,6 +178,6 @@
     </QtMoc>
   </ItemGroup>
   <ItemGroup>
-    <QtRcc Include="Resource.qrc" />
+    <QtRcc Include="gui\Resource.qrc" />
   </ItemGroup>
 </Project>

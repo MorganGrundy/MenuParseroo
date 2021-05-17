@@ -84,9 +84,12 @@
         </property>
         <property name="minimumSize">
          <size>
-          <width>200</width>
+          <width>300</width>
           <height>0</height>
          </size>
+        </property>
+        <property name="horizontalScrollBarPolicy">
+         <enum>Qt::ScrollBarAlwaysOff</enum>
         </property>
         <property name="widgetResizable">
          <bool>true</bool>
@@ -96,7 +99,7 @@
           <rect>
            <x>0</x>
            <y>0</y>
-           <width>198</width>
+           <width>298</width>
            <height>626</height>
           </rect>
          </property>

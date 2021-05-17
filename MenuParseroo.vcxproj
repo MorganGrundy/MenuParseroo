@@ -208,12 +208,14 @@
     <ClCompile Include="gui\PreprocessStepListWidget.cpp" />
     <ClCompile Include="gui\PreprocessStepWidget.cpp" />
     <ClCompile Include="gui\UpDownButton.cpp" />
+    <ClCompile Include="logic\PreprocessStep.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="logic\CharProperty.h" />
     <ClInclude Include="logic\FontMetric.h" />
     <ClInclude Include="gui\GraphicsFontMetricItem.h" />
     <ClInclude Include="logic\ImageUtility.h" />
+    <ClInclude Include="logic\PreprocessStep.h" />
     <QtMoc Include="gui\UpDownButton.h" />
     <QtMoc Include="gui\PreprocessStepWidget.h" />
     <QtMoc Include="gui\PreprocessStepListWidget.h" />
@@ -263,7 +265,7 @@
     <ResourceCompile Include=".\MenuParseroo_resource.rc" />
   </ItemGroup>
   <ItemGroup>
-    <QtRcc Include="Resource.qrc" />
+    <QtRcc Include="gui\Resource.qrc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">

@@ -1,10 +1,10 @@
 <RCC>
     <qresource prefix="/gui">
-        <file>DownArrow.png</file>
-        <file>UpArrow.png</file>
-        <file>DownArrowActive.png</file>
-        <file>UpArrowActive.png</file>
         <file>DeleteButton.png</file>
         <file>DeleteButtonActive.png</file>
+        <file>DownArrow.png</file>
+        <file>DownArrowActive.png</file>
+        <file>UpArrow.png</file>
+        <file>UpArrowActive.png</file>
     </qresource>
 </RCC>

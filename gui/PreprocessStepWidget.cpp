@@ -3,7 +3,7 @@
 int PreprocessStepWidget::id = 0;
 
 PreprocessStepWidget::PreprocessStepWidget(QWidget *parent)
-	: QFrame(parent)
+	: QFrame(parent), m_step{ nullptr }
 {
 	//Set style
 	setFrameStyle(QFrame::Panel | QFrame::Raised);
@@ -23,6 +23,9 @@ PreprocessStepWidget::PreprocessStepWidget(QWidget *parent)
 	m_label = new QLabel("Test Label " + QString::number(id++), this);
 	m_layout->addWidget(m_label);
 
+	//Create spacer item
+	m_layout->addSpacerItem(new QSpacerItem(10, 10, QSizePolicy::Policy::Expanding));
+
 	//Create delete button
 	m_delButton = new QPushButton(this);
 	m_delButton->setStyleSheet("background-color: rgba(255, 255, 255, 0);");
@@ -30,6 +33,7 @@ PreprocessStepWidget::PreprocessStepWidget(QWidget *parent)
 	deleteIcon.addFile(":/gui/DeleteButtonActive.png", QSize(), QIcon::Active, QIcon::State::Off);
 	m_delButton->setIcon(deleteIcon);
 	m_delButton->setIconSize(QSize(24, 24));
+	m_delButton->setSizePolicy(QSizePolicy::Policy::Fixed, QSizePolicy::Policy::Fixed);
 	m_layout->addWidget(m_delButton);
 
 	//Connect signals for moving item
@@ -41,6 +45,8 @@ PreprocessStepWidget::PreprocessStepWidget(QWidget *parent)
 	//Connect signals for deleting item
 	connect(m_delButton, SIGNAL(released()),
 		this, SIGNAL(deleteReleased()));
+
+	loadStepData();
 }
 
 PreprocessStepWidget::~PreprocessStepWidget()
@@ -49,4 +55,12 @@ PreprocessStepWidget::~PreprocessStepWidget()
 	delete m_label;
 	delete m_delButton;
 	delete m_layout;
+}
+
+void PreprocessStepWidget::loadStepData()
+{
+	if (m_step != nullptr)
+	{
+		m_label->setText(QString::fromStdString(m_step->getName()));
+	}
 }
