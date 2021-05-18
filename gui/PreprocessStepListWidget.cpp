@@ -34,6 +34,8 @@ void PreprocessStepListWidget::addStep()
 	//Connect signal for deleting step
 	connect(newStep, &PreprocessStepWidget::deleteReleased,
 		this, [=]() { deleteStep(newStep); });
+
+	preprocess();
 }
 
 //Moves step in direction
@@ -52,6 +54,8 @@ void PreprocessStepListWidget::moveStep(PreprocessStepWidget *step, const Direct
 	//Move step in layout
 	m_layout->removeWidget(step);
 	m_layout->insertWidget(newIndex, step);
+
+	preprocess();
 }
 
 //Deletes step
@@ -60,4 +64,22 @@ void PreprocessStepListWidget::deleteStep(PreprocessStepWidget *step)
 	m_steps.removeOne(step);
 	m_layout->removeWidget(step);
 	delete step;
+
+	preprocess();
+}
+
+void PreprocessStepListWidget::setImage(const cv::Mat &t_in)
+{
+	m_image = t_in;
+	preprocess();
+}
+
+//Performs all preprocess steps on current image
+void PreprocessStepListWidget::preprocess()
+{
+	cv::Mat tmp(m_image);
+	for (auto step : m_steps)
+		step->preprocess(tmp, tmp);
+
+	emit imageUpdated(tmp);
 }

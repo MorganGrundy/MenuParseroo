@@ -16,6 +16,10 @@ MainWindow::MainWindow(QWidget *parent)
 	: QMainWindow(parent), ui(new Ui::MainWindow)
 {
 	ui->setupUi(this);
+
+	//Update graphics view when preprocessed image changes
+	connect(ui->preprocessStepList, &PreprocessStepListWidget::imageUpdated,
+		this, [=](const cv::Mat &t_image) { ui->graphicsView->setImage(ImageUtility::matToQPixmap(t_image)); });
 }
 
 MainWindow::~MainWindow()
@@ -42,7 +46,7 @@ void MainWindow::loadImage()
 		else
 		{
 			//Set image
-			ui->graphicsView->setImage(ImageUtility::matToQPixmap(image));
+			ui->preprocessStepList->setImage(image);
 		}
 	}
 }

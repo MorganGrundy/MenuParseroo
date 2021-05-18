@@ -64,3 +64,12 @@ void PreprocessStepWidget::loadStepData()
 		m_label->setText(QString::fromStdString(m_step->getName()));
 	}
 }
+
+//Applies the preprocess step to an image
+void PreprocessStepWidget::preprocess(const cv::Mat &t_in, cv::Mat &t_out)
+{
+	if (m_step == nullptr)
+		t_out = t_in.clone();
+	else
+		m_step->preprocess(t_in, t_out);
+}
