@@ -5,7 +5,7 @@ PreprocessStep::PreprocessStep()
 
 std::string PreprocessStep::getName()
 {
-    return name;
+    return "Default";
 }
 
 //Applies the preprocess step to an image

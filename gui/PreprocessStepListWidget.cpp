@@ -77,7 +77,7 @@ void PreprocessStepListWidget::setImage(const cv::Mat &t_in)
 //Performs all preprocess steps on current image
 void PreprocessStepListWidget::preprocess()
 {
-	cv::Mat tmp(m_image);
+	cv::Mat tmp = m_image.clone();
 	for (auto step : m_steps)
 		step->preprocess(tmp, tmp);
 

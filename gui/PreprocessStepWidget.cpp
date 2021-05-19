@@ -1,9 +1,10 @@
 #include "PreprocessStepWidget.h"
+#include "BinaryThresholdPreprocessStep.h"
 
 int PreprocessStepWidget::id = 0;
 
 PreprocessStepWidget::PreprocessStepWidget(QWidget *parent)
-	: QFrame(parent), m_step{ nullptr }
+	: QFrame(parent), m_step{ new BinaryThresholdPreprocessStep() }
 {
 	//Set style
 	setFrameStyle(QFrame::Panel | QFrame::Raised);
