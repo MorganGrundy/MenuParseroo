@@ -191,6 +191,7 @@
     </QtMoc>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="gui\BinaryThresholdPreprocessStepWidget.cpp" />
     <ClCompile Include="logic\BinaryThresholdPreprocessStep.cpp" />
     <ClCompile Include="gui\ZoomableImageView.cpp" />
     <ClCompile Include="logic\CharProperty.cpp" />
@@ -212,6 +213,7 @@
     <ClCompile Include="logic\PreprocessStep.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <QtMoc Include="gui\BinaryThresholdPreprocessStepWidget.h" />
     <ClInclude Include="logic\BinaryThresholdPreprocessStep.h" />
     <ClInclude Include="logic\CharProperty.h" />
     <ClInclude Include="logic\FontMetric.h" />

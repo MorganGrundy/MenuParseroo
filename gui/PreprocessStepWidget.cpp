@@ -1,10 +1,8 @@
 #include "PreprocessStepWidget.h"
 #include "BinaryThresholdPreprocessStep.h"
 
-int PreprocessStepWidget::id = 0;
-
 PreprocessStepWidget::PreprocessStepWidget(QWidget *parent)
-	: QFrame(parent), m_step{ new BinaryThresholdPreprocessStep() }
+	: QFrame(parent), m_step{ nullptr }
 {
 	//Set style
 	setFrameStyle(QFrame::Panel | QFrame::Raised);
@@ -21,8 +19,9 @@ PreprocessStepWidget::PreprocessStepWidget(QWidget *parent)
 	m_layout->addWidget(m_upDownButton);
 
 	//Create label
-	m_label = new QLabel("Test Label " + QString::number(id++), this);
-	m_layout->addWidget(m_label);
+	m_nameLabel = new QLabel(this);
+	m_nameLabel->setText("N/A");
+	m_layout->addWidget(m_nameLabel);
 
 	//Create spacer item
 	m_layout->addSpacerItem(new QSpacerItem(10, 10, QSizePolicy::Policy::Expanding));
@@ -46,25 +45,10 @@ PreprocessStepWidget::PreprocessStepWidget(QWidget *parent)
 	//Connect signals for deleting item
 	connect(m_delButton, SIGNAL(released()),
 		this, SIGNAL(deleteReleased()));
-
-	loadStepData();
 }
 
 PreprocessStepWidget::~PreprocessStepWidget()
-{
-	delete m_upDownButton;
-	delete m_label;
-	delete m_delButton;
-	delete m_layout;
-}
-
-void PreprocessStepWidget::loadStepData()
-{
-	if (m_step != nullptr)
-	{
-		m_label->setText(QString::fromStdString(m_step->getName()));
-	}
-}
+{}
 
 //Applies the preprocess step to an image
 void PreprocessStepWidget::preprocess(const cv::Mat &t_in, cv::Mat &t_out)

@@ -15,11 +15,8 @@ public:
 	PreprocessStepWidget(QWidget *parent);
 	~PreprocessStepWidget();
 
-	void loadStepData();
-
 	//Applies the preprocess step to an image
 	void preprocess(const cv::Mat &t_in, cv::Mat &t_out);
-
 
 signals:
 	void moveUp();
@@ -27,13 +24,13 @@ signals:
 
 	void deleteReleased();
 
-private:
+	void stepChanged();
+
+protected:
+	PreprocessStep *m_step;
+
 	QHBoxLayout *m_layout;
 	UpDownButton *m_upDownButton;
-	QLabel *m_label;
+	QLabel *m_nameLabel;
 	QPushButton *m_delButton;
-
-	static int id;
-
-	PreprocessStep *m_step;
 };

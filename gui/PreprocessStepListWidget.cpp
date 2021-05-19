@@ -1,4 +1,5 @@
 #include "PreprocessStepListWidget.h"
+#include "BinaryThresholdPreprocessStepWidget.h"
 
 PreprocessStepListWidget::PreprocessStepListWidget(QWidget *parent)
 	: QWidget(parent), m_steps{}
@@ -9,19 +10,13 @@ PreprocessStepListWidget::PreprocessStepListWidget(QWidget *parent)
 }
 
 PreprocessStepListWidget::~PreprocessStepListWidget()
-{
-	for (auto step : m_steps)
-		delete step;
-	m_steps.clear();
-
-	delete m_layout;
-}
+{}
 
 //Creates a preprocessing step and adds it to list
 void PreprocessStepListWidget::addStep()
 {
 	//Create step and add to layout
-	PreprocessStepWidget *newStep = new PreprocessStepWidget(this);
+	PreprocessStepWidget *newStep = new BinaryThresholdPreprocessStepWidget(this);
 	m_steps.append(newStep);
 	m_layout->addWidget(newStep);
 
@@ -34,6 +29,10 @@ void PreprocessStepListWidget::addStep()
 	//Connect signal for deleting step
 	connect(newStep, &PreprocessStepWidget::deleteReleased,
 		this, [=]() { deleteStep(newStep); });
+
+	//Connect signal for when step is modified
+	connect(newStep, &PreprocessStepWidget::stepChanged,
+		this, [=]() { preprocess(); });
 
 	preprocess();
 }
