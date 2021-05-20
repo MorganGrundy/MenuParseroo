@@ -42,6 +42,12 @@ QImage ImageUtility::matToQImage(const cv::Mat &t_mat)
 		return QImage(t_mat.data, t_mat.cols, t_mat.rows, static_cast<int>(t_mat.step),
 			QImage::Format_RGB888).rgbSwapped();
 	}
+	//4-channel is BGRA
+	else if (t_mat.channels() == 4)
+	{
+		return QImage(t_mat.data, t_mat.cols, t_mat.rows, static_cast<int>(t_mat.step),
+			QImage::Format_ARGB32);
+	}
 
 	std::cerr << __FILE__":" << __LINE__ << " - Image type not supported\n";
 	QCoreApplication::exit(-1);
@@ -53,7 +59,7 @@ cv::Mat ImageUtility::qImageToMat(const QImage &t_image)
 {
 	if (t_image.format() == QImage::Format_RGBA8888)
 	{
-		cv::Mat mat(t_image.height(), t_image.width(), CV_8UC3);
+		cv::Mat mat(t_image.height(), t_image.width(), CV_8UC4);
 		uchar *rowPtr;
 		for (int row = 0; row < t_image.height(); ++row)
 		{
@@ -61,18 +67,10 @@ cv::Mat ImageUtility::qImageToMat(const QImage &t_image)
 			for (int col = 0; col < t_image.width(); ++col)
 			{
 				const QColor pixel = t_image.pixelColor(col, row);
-				if (pixel.alpha() != 0)
-				{
-					rowPtr[col * 3] = pixel.blue();
-					rowPtr[col * 3 + 1] = pixel.green();
-					rowPtr[col * 3 + 2] = pixel.red();
-				}
-				else
-				{
-					rowPtr[col * 3] = 255;
-					rowPtr[col * 3 + 1] = 255;
-					rowPtr[col * 3 + 2] = 255;
-				}
+				rowPtr[col * 3] = pixel.blue();
+				rowPtr[col * 3 + 1] = pixel.green();
+				rowPtr[col * 3 + 2] = pixel.red();
+				rowPtr[col * 3 + 3] = pixel.alpha();
 			}
 		}
 
@@ -82,6 +80,23 @@ cv::Mat ImageUtility::qImageToMat(const QImage &t_image)
 	std::cerr << __FILE__":" << __LINE__ << " - Image type not supported\n";
 	QCoreApplication::exit(-1);
 	return cv::Mat();
+}
+
+//Adds an alpha channel to an image
+void ImageUtility::matAddAlpha(const cv::Mat &t_in, const cv::Mat &t_alpha, cv::Mat &t_out)
+{
+	std::vector<cv::Mat> matChannels;
+	cv::split(t_in, matChannels);
+
+	if (t_alpha.empty())
+	{
+		cv::Mat newAlpha = cv::Mat(t_in.size(), CV_8UC1, cv::Scalar(255));
+		matChannels.push_back(newAlpha);
+	}
+	else
+		matChannels.push_back(t_alpha);
+
+	cv::merge(matChannels, t_out);
 }
 
 //Merges alpha channel into image

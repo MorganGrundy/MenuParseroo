@@ -192,6 +192,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="gui\GrayscalePreprocessStepWidget.cpp" />
+    <ClCompile Include="gui\MaskPreprocessStepWidget.cpp" />
     <ClCompile Include="logic\GrayscalePreprocessStep.cpp" />
     <ClCompile Include="gui\BinaryThresholdPreprocessStepWidget.cpp" />
     <ClCompile Include="logic\BinaryThresholdPreprocessStep.cpp" />
@@ -213,8 +214,11 @@
     <ClCompile Include="gui\PreprocessStepWidget.cpp" />
     <ClCompile Include="gui\UpDownButton.cpp" />
     <ClCompile Include="logic\PreprocessStep.cpp" />
+    <ClCompile Include="logic\MaskPreprocessStep.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <QtMoc Include="gui\MaskPreprocessStepWidget.h" />
+    <ClInclude Include="logic\MaskPreprocessStep.h" />
     <QtMoc Include="gui\BinaryThresholdPreprocessStepWidget.h" />
     <QtMoc Include="gui\GrayscalePreprocessStepWidget.h" />
     <ClInclude Include="logic\GrayscalePreprocessStep.h" />

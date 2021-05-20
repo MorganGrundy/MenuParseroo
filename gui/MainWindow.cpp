@@ -3,6 +3,7 @@
 #include "ImageUtility.h"
 #include "BinaryThresholdPreprocessStepWidget.h"
 #include "GrayscalePreprocessStepWidget.h"
+#include "MaskPreprocessStepWidget.h"
 
 #include <QFileDialog>
 #include <QMessageBox>
@@ -24,8 +25,9 @@ MainWindow::MainWindow(QWidget *parent)
 
 	//Add menu to add step button
 	menu = new QMenu(this);
-	menu->addAction("Binary Threshold", this, [=]() { ui->preprocessStepList->addStep(new BinaryThresholdPreprocessStepWidget()); });
 	menu->addAction("Convert to Grayscale", this, [=]() { ui->preprocessStepList->addStep(new GrayscalePreprocessStepWidget()); });
+	menu->addAction("Binary Threshold", this, [=]() { ui->preprocessStepList->addStep(new BinaryThresholdPreprocessStepWidget()); });
+	menu->addAction("Apply Mask", this, [=]() { ui->preprocessStepList->addStep(new MaskPreprocessStepWidget()); });
 	ui->toolAddStep->setMenu(menu);
 }
 

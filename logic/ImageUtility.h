@@ -15,6 +15,9 @@ namespace ImageUtility
 	//Converts a QImage to an OpenCV Mat
 	cv::Mat qImageToMat(const QImage &t_image);
 
+	//Adds an alpha channel to an image
+	void matAddAlpha(const cv::Mat &t_in, const cv::Mat &t_alpha, cv::Mat &t_out);
+
 	//Merges alpha channel into image
 	//Treats alpha channel as binary
 	bool mergeAlpha(QImage &t_image, const QImage &t_alpha);

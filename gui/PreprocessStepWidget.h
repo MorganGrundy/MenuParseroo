@@ -16,7 +16,7 @@ public:
 	~PreprocessStepWidget();
 
 	//Applies the preprocess step to an image
-	void preprocess(const cv::Mat &t_in, cv::Mat &t_out);
+	virtual void preprocess(const cv::Mat &t_in, cv::Mat &t_out);
 
 signals:
 	void moveUp();
