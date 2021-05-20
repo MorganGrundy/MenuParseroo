@@ -1,5 +1,6 @@
 #include "PreprocessStepListWidget.h"
 #include "BinaryThresholdPreprocessStepWidget.h"
+#include "GrayscalePreprocessStepWidget.h"
 
 PreprocessStepListWidget::PreprocessStepListWidget(QWidget *parent)
 	: QWidget(parent), m_steps{}
@@ -16,7 +17,7 @@ PreprocessStepListWidget::~PreprocessStepListWidget()
 void PreprocessStepListWidget::addStep()
 {
 	//Create step and add to layout
-	PreprocessStepWidget *newStep = new BinaryThresholdPreprocessStepWidget(this);
+	PreprocessStepWidget *newStep = new GrayscalePreprocessStepWidget(this);
 	m_steps.append(newStep);
 	m_layout->addWidget(newStep);
 
