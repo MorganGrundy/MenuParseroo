@@ -1,7 +1,8 @@
 #include "MainWindow.h"
 #include "ui_mainwindow.h"
 #include "ImageUtility.h"
-#include "MaskPainterDialog.h"
+#include "BinaryThresholdPreprocessStepWidget.h"
+#include "GrayscalePreprocessStepWidget.h"
 
 #include <QFileDialog>
 #include <QMessageBox>
@@ -20,6 +21,12 @@ MainWindow::MainWindow(QWidget *parent)
 	//Update graphics view when preprocessed image changes
 	connect(ui->preprocessStepList, &PreprocessStepListWidget::imageUpdated,
 		this, [=](const cv::Mat &t_image) { ui->graphicsView->setImage(ImageUtility::matToQPixmap(t_image)); });
+
+	//Add menu to add step button
+	menu = new QMenu(this);
+	menu->addAction("Binary Threshold", this, [=]() { ui->preprocessStepList->addStep(new BinaryThresholdPreprocessStepWidget()); });
+	menu->addAction("Convert to Grayscale", this, [=]() { ui->preprocessStepList->addStep(new GrayscalePreprocessStepWidget()); });
+	ui->toolAddStep->setMenu(menu);
 }
 
 MainWindow::~MainWindow()

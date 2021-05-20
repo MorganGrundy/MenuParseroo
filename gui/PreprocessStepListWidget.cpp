@@ -1,6 +1,4 @@
 #include "PreprocessStepListWidget.h"
-#include "BinaryThresholdPreprocessStepWidget.h"
-#include "GrayscalePreprocessStepWidget.h"
 
 PreprocessStepListWidget::PreprocessStepListWidget(QWidget *parent)
 	: QWidget(parent), m_steps{}
@@ -13,26 +11,32 @@ PreprocessStepListWidget::PreprocessStepListWidget(QWidget *parent)
 PreprocessStepListWidget::~PreprocessStepListWidget()
 {}
 
-//Creates a preprocessing step and adds it to list
-void PreprocessStepListWidget::addStep()
+//Adds a preprocessing step to the list
+void PreprocessStepListWidget::addStep(PreprocessStepWidget *step)
 {
-	//Create step and add to layout
-	PreprocessStepWidget *newStep = new GrayscalePreprocessStepWidget(this);
-	m_steps.append(newStep);
-	m_layout->addWidget(newStep);
+	if (step == nullptr)
+		return;
+
+	//No duplicates
+	if (m_steps.contains(step))
+		return;
+
+	step->setParent(this);
+	m_steps.append(step);
+	m_layout->addWidget(step);
 
 	//Connect signals for changing step order
-	connect(newStep, &PreprocessStepWidget::moveUp,
-		this, [=]() { moveStep(newStep, Direction::Up); });
-	connect(newStep, &PreprocessStepWidget::moveDown,
-		this, [=]() { moveStep(newStep, Direction::Down); });
+	connect(step, &PreprocessStepWidget::moveUp,
+		this, [=]() { moveStep(step, Direction::Up); });
+	connect(step, &PreprocessStepWidget::moveDown,
+		this, [=]() { moveStep(step, Direction::Down); });
 
 	//Connect signal for deleting step
-	connect(newStep, &PreprocessStepWidget::deleteReleased,
-		this, [=]() { deleteStep(newStep); });
+	connect(step, &PreprocessStepWidget::deleteReleased,
+		this, [=]() { deleteStep(step); });
 
 	//Connect signal for when step is modified
-	connect(newStep, &PreprocessStepWidget::stepChanged,
+	connect(step, &PreprocessStepWidget::stepChanged,
 		this, [=]() { preprocess(); });
 
 	preprocess();
@@ -77,6 +81,9 @@ void PreprocessStepListWidget::setImage(const cv::Mat &t_in)
 //Performs all preprocess steps on current image
 void PreprocessStepListWidget::preprocess()
 {
+	if (m_image.empty())
+		return;
+
 	cv::Mat tmp = m_image.clone();
 	for (auto step : m_steps)
 		step->preprocess(tmp, tmp);

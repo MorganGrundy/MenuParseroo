@@ -9,7 +9,7 @@ class BinaryThresholdPreprocessStepWidget : public PreprocessStepWidget
 	Q_OBJECT
 
 public:
-	BinaryThresholdPreprocessStepWidget(QWidget *parent);
+	BinaryThresholdPreprocessStepWidget(QWidget *parent = nullptr);
 	~BinaryThresholdPreprocessStepWidget();
 
 private:

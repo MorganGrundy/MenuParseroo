@@ -44,9 +44,24 @@
        </spacer>
       </item>
       <item>
-       <widget class="QPushButton" name="pushAddStep">
+       <widget class="QToolButton" name="toolAddStep">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
         <property name="text">
          <string>Add Step</string>
+        </property>
+        <property name="popupMode">
+         <enum>QToolButton::MenuButtonPopup</enum>
+        </property>
+        <property name="autoRaise">
+         <bool>false</bool>
+        </property>
+        <property name="arrowType">
+         <enum>Qt::NoArrow</enum>
         </property>
        </widget>
       </item>
@@ -193,22 +208,6 @@
     <hint type="destinationlabel">
      <x>639</x>
      <y>359</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>pushAddStep</sender>
-   <signal>released()</signal>
-   <receiver>preprocessStepList</receiver>
-   <slot>addStep()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>1124</x>
-     <y>39</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>1117</x>
-     <y>141</y>
     </hint>
    </hints>
   </connection>

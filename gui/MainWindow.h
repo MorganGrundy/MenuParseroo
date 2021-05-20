@@ -26,5 +26,6 @@ public slots:
 
 private:
 	Ui::MainWindow *ui;
+	QMenu *menu;
 };
 #endif // MAINWINDOW_H

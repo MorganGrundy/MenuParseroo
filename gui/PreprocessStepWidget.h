@@ -12,7 +12,7 @@ class PreprocessStepWidget : public QFrame
 	Q_OBJECT
 
 public:
-	PreprocessStepWidget(QWidget *parent);
+	PreprocessStepWidget(QWidget *parent = nullptr);
 	~PreprocessStepWidget();
 
 	//Applies the preprocess step to an image

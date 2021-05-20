@@ -17,8 +17,8 @@ public:
 	~PreprocessStepListWidget();
 
 public slots:
-	//Creates a preprocessing step and adds it to list
-	void addStep();
+	//Adds a preprocessing step to the list
+	void addStep(PreprocessStepWidget *step);
 	//Moves step in direction
 	void moveStep(PreprocessStepWidget *step, const Direction dir);
 	//Deletes step

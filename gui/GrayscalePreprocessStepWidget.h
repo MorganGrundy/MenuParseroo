@@ -8,6 +8,6 @@ class GrayscalePreprocessStepWidget : public PreprocessStepWidget
 	Q_OBJECT
 
 public:
-	GrayscalePreprocessStepWidget(QWidget *parent);
+	GrayscalePreprocessStepWidget(QWidget *parent = nullptr);
 	~GrayscalePreprocessStepWidget();
 };
