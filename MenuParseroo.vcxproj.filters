@@ -144,6 +144,9 @@
     <ClInclude Include="logic\MaskPreprocessStep.h">
       <Filter>Header Files\logic</Filter>
     </ClInclude>
+    <ClInclude Include="logic\asmOpenCV.h">
+      <Filter>Header Files\logic</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="debug\moc_predefs.h.cbt">

@@ -218,6 +218,7 @@
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="gui\MaskPreprocessStepWidget.h" />
+    <ClInclude Include="logic\asmOpenCV.h" />
     <ClInclude Include="logic\MaskPreprocessStep.h" />
     <QtMoc Include="gui\BinaryThresholdPreprocessStepWidget.h" />
     <QtMoc Include="gui\GrayscalePreprocessStepWidget.h" />

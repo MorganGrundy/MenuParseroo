@@ -26,10 +26,7 @@ MaskPainterGraphicsView::~MaskPainterGraphicsView() {}
 //Sets the image
 void MaskPainterGraphicsView::setImage(const QImage &t_image)
 {
-	if (t_image.format() == QImage::Format_RGBA8888)
-		image = t_image;
-	else
-		image = t_image.convertToFormat(QImage::Format_RGBA8888);
+	image = t_image.convertToFormat(QImage::Format::Format_ARGB32);
 
 	//Set brush radius to 5% of image size
 	setBrushRadius(static_cast<int>(std::round(0.05 * std::min(image.width(), image.height()))));

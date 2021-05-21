@@ -21,8 +21,8 @@ void MaskPreprocessStep::preprocess(const cv::Mat &t_in, cv::Mat &t_out)
 	}
 	else
 	{
-		t_out = cv::Mat::zeros(t_in.size(), t_in.type());
-		cv::copyTo(t_in, t_out, m_mask);
+		t_out = cv::Mat(t_in.size(), t_in.type(), cv::Scalar::all(255));
+		t_in.copyTo(t_out, m_mask);
 	}
 }
 

@@ -1,6 +1,7 @@
 #include "OCRGraphicsView.h"
 #include "ImageUtility.h"
 #include "MaskPainterDialog.h"
+#include "asmOpenCV.h"
 
 #include <iostream>
 
@@ -38,7 +39,7 @@ void OCRGraphicsView::setImage(const cv::Mat &t_image)
 {
 	//Original image
 	originalImage = t_image;
-	imageAndMask = ImageUtility::matToQImage(t_image);
+	imageAndMask = ASM::cvMatToQImage(t_image);
 
 	updateImages();
 }
@@ -64,7 +65,7 @@ void OCRGraphicsView::setThreshold(const int t_threshold, const bool t_otsu, con
 			cv::threshold(grayImage, thresholdImage, t_threshold, 255, cv::THRESH_BINARY);
 
 		//Set new threshold image
-		thresholdImageItem->setPixmap(ImageUtility::matToQPixmap(thresholdImage));
+		thresholdImageItem->setPixmap(ASM::cvMatToQPixmap(thresholdImage));
 
 		//Clear old OCR data
 		clearTesseract();
@@ -98,7 +99,7 @@ void OCRGraphicsView::editMask()
 			{
 				imageAndMask = maskPainterDialog.getImage();
 
-				originalImage = ImageUtility::qImageToMat(imageAndMask);
+				originalImage = ASM::QImageToCvMat(imageAndMask);
 				updateImages();
 			}
 		}
@@ -115,7 +116,7 @@ void OCRGraphicsView::editMask()
 				//Combine current mask with new
 				ImageUtility::mergeAlpha(imageAndMask, maskPainterDialog.getImage());
 
-				originalImage = ImageUtility::qImageToMat(imageAndMask);
+				originalImage = ASM::QImageToCvMat(imageAndMask);
 				updateImages();
 			}
 		}
@@ -205,7 +206,7 @@ void OCRGraphicsView::updateImages()
 
 	//Grayscale image
 	cv::cvtColor(originalImage, grayImage, cv::COLOR_BGR2GRAY);
-	grayImageItem->setPixmap(ImageUtility::matToQPixmap(grayImage));
+	grayImageItem->setPixmap(ASM::cvMatToQPixmap(grayImage));
 
 	//Threshold image
 	setThreshold(threshold, otsu, true);

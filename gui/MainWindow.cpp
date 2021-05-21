@@ -4,6 +4,7 @@
 #include "BinaryThresholdPreprocessStepWidget.h"
 #include "GrayscalePreprocessStepWidget.h"
 #include "MaskPreprocessStepWidget.h"
+#include "asmOpenCV.h"
 
 #include <QFileDialog>
 #include <QMessageBox>
@@ -21,7 +22,7 @@ MainWindow::MainWindow(QWidget *parent)
 
 	//Update graphics view when preprocessed image changes
 	connect(ui->preprocessStepList, &PreprocessStepListWidget::imageUpdated,
-		this, [=](const cv::Mat &t_image) { ui->graphicsView->setImage(ImageUtility::matToQPixmap(t_image)); });
+		this, [=](const cv::Mat &t_image) { ui->graphicsView->setImage(ASM::cvMatToQPixmap(t_image)); });
 
 	//Add menu to add step button
 	menu = new QMenu(this);

@@ -85,8 +85,12 @@ void PreprocessStepListWidget::preprocess()
 		return;
 
 	cv::Mat tmp = m_image.clone();
+	cv::Mat tmp2;
 	for (auto step : m_steps)
-		step->preprocess(tmp, tmp);
+	{
+		step->preprocess(tmp, tmp2);
+		tmp = tmp2;
+	}
 
 	emit imageUpdated(tmp);
 }

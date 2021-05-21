@@ -2,9 +2,11 @@
 #include "MaskPreprocessStep.h"
 #include "MaskPainterDialog.h"
 #include "ImageUtility.h"
+#include "asmOpenCV.h"
 
 #include <QMessageBox>
-#include <QDebug>
+
+#include <opencv2/imgproc.hpp>
 
 MaskPreprocessStepWidget::MaskPreprocessStepWidget(QWidget *parent)
 	: PreprocessStepWidget(parent)
@@ -36,13 +38,13 @@ MaskPreprocessStepWidget::MaskPreprocessStepWidget(QWidget *parent)
 			ImageUtility::matAddAlpha(m_inputImageCache, static_cast<MaskPreprocessStep *>(m_step)->getMask(), imageAndMask);
 
 			//Convert mat to QImage
-			QImage image = ImageUtility::matToQImage(imageAndMask);
+			QImage image = ASM::cvMatToQImage(imageAndMask);
 
 			//Open mask painter dialog
 			MaskPainterDialog maskPainterDialog(image, this);
 			if (maskPainterDialog.exec() == QDialog::Accepted)
 			{
-				imageAndMask = ImageUtility::qImageToMat(maskPainterDialog.getImage());
+				imageAndMask = ASM::QImageToCvMat(maskPainterDialog.getImage());
 
 				cv::Mat mask;
 				cv::extractChannel(imageAndMask, mask, 3);
@@ -59,6 +61,20 @@ MaskPreprocessStepWidget::~MaskPreprocessStepWidget()
 //Applies the preprocess step to an image
 void MaskPreprocessStepWidget::preprocess(const cv::Mat & t_in, cv::Mat & t_out)
 {
-	m_inputImageCache = t_in;
+	//Cache input image
+	m_inputImageCache = t_in.clone();
+
+	//Resize mask
+	cv::Mat mask = static_cast<MaskPreprocessStep *>(m_step)->getMask();
+	if (t_in.size() != mask.size())
+	{
+		cv::Mat newMask = cv::Mat(t_in.size(), CV_8UC1, cv::Scalar::all(255));
+		if (!t_in.empty() && !mask.empty())
+		{
+			mask(cv::Range(0, std::min(mask.rows, newMask.rows)), cv::Range(0, std::min(mask.cols, newMask.cols))).copyTo(newMask);
+		}
+		static_cast<MaskPreprocessStep *>(m_step)->setMask(newMask);
+	}
+
 	m_step->preprocess(t_in, t_out);
 }
