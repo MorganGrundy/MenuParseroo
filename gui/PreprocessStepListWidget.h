@@ -28,6 +28,8 @@ public slots:
 	void setImage(const cv::Mat &t_in);
 	//Performs all preprocess steps on current image
 	void preprocess();
+	//Returns cached image result
+	cv::Mat getResult();
 
 signals:
 	//Emits preprocessed image whenever it changes
@@ -38,4 +40,5 @@ private:
 	QList<PreprocessStepWidget *> m_steps;
 
 	cv::Mat m_image;
+	cv::Mat m_cachedImageResult;
 };

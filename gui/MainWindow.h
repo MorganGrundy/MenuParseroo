@@ -1,5 +1,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
+#include "MultiscaleOCR.h"
+
 #include <QMainWindow>
 #include <QGraphicsScene>
 
@@ -24,8 +26,13 @@ public slots:
 	//Prompts user for image
 	void loadImage();
 
+	//Performs OCR
+	void OCR();
+
 private:
 	Ui::MainWindow *ui;
 	QMenu *menu;
+
+	MultiscaleOCR multiscaleOCR;
 };
 #endif // MAINWINDOW_H

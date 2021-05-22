@@ -82,7 +82,10 @@ void PreprocessStepListWidget::setImage(const cv::Mat &t_in)
 void PreprocessStepListWidget::preprocess()
 {
 	if (m_image.empty())
+	{
+		m_cachedImageResult = cv::Mat();
 		return;
+	}
 
 	cv::Mat tmp = m_image.clone();
 	cv::Mat tmp2;
@@ -92,5 +95,12 @@ void PreprocessStepListWidget::preprocess()
 		tmp = tmp2;
 	}
 
+	m_cachedImageResult = tmp;
 	emit imageUpdated(tmp);
+}
+
+//Returns cached image result
+cv::Mat PreprocessStepListWidget::getResult()
+{
+	return m_cachedImageResult;
 }

@@ -1,6 +1,5 @@
 #include "MainWindow.h"
 #include "ui_mainwindow.h"
-#include "ImageUtility.h"
 #include "BinaryThresholdPreprocessStepWidget.h"
 #include "GrayscalePreprocessStepWidget.h"
 #include "MaskPreprocessStepWidget.h"
@@ -22,7 +21,7 @@ MainWindow::MainWindow(QWidget *parent)
 
 	//Update graphics view when preprocessed image changes
 	connect(ui->preprocessStepList, &PreprocessStepListWidget::imageUpdated,
-		this, [=](const cv::Mat &t_image) { ui->graphicsView->setImage(ASM::cvMatToQPixmap(t_image)); });
+		this, [=](const cv::Mat &t_image) { ui->graphicsViewPreprocessing->setImage(ASM::cvMatToQPixmap(t_image)); });
 
 	//Add menu to add step button
 	menu = new QMenu(this);
@@ -30,11 +29,46 @@ MainWindow::MainWindow(QWidget *parent)
 	menu->addAction("Binary Threshold", this, [=]() { ui->preprocessStepList->addStep(new BinaryThresholdPreprocessStepWidget()); });
 	menu->addAction("Apply Mask", this, [=]() { ui->preprocessStepList->addStep(new MaskPreprocessStepWidget()); });
 	ui->toolAddStep->setMenu(menu);
+
+	//Select preprocessing tab
+	ui->tabWidget->setCurrentIndex(0);
 }
 
 MainWindow::~MainWindow()
 {
 	delete ui;
+}
+
+//Performs OCR
+void MainWindow::OCR()
+{
+	const cv::Mat image = ui->preprocessStepList->getResult();
+	if (image.empty())
+	{
+		QMessageBox messageBox(this);
+		messageBox.setText("No image loaded.");
+		messageBox.exec();
+		return;
+	}
+	//Preprocessed image must be grayscale
+	if (image.channels() != 1)
+	{
+		QMessageBox messageBox(this);
+		messageBox.setText("Image must be grayscale.");
+		messageBox.exec();
+		return;
+	}
+
+	//OCR image
+	multiscaleOCR.setImage(image);
+	multiscaleOCR.OCR();
+
+	//Pass results to OCR Correction graphics view
+	ui->graphicsViewOCR->setData(multiscaleOCR.getResults());
+	ui->graphicsViewOCR->setImage(ASM::cvMatToQPixmap(image));
+
+	//Change to OCR Correction tab
+	ui->tabWidget->setCurrentIndex(1);
 }
 
 //Prompts user for image

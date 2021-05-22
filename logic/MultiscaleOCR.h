@@ -24,6 +24,8 @@ public:
 
 	//Clears results
 	void clear();
+	//Returns results
+	const std::vector<FontMetric> &getResults() const;
 
 	//Const iterator for beginning of OCR results
 	std::vector<FontMetric>::const_iterator begin() const;

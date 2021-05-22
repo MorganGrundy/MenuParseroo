@@ -155,6 +155,12 @@ void MultiscaleOCR::clear()
 	results.clear();
 }
 
+//Returns results
+const std::vector<FontMetric> &MultiscaleOCR::getResults() const
+{
+	return results;
+}
+
 //Const iterator for beginning of OCR results
 std::vector<FontMetric>::const_iterator MultiscaleOCR::begin() const
 {

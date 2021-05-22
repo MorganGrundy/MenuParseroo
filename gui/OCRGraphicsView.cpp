@@ -13,163 +13,22 @@
 #include <tesseract/genericvector.h>
 
 OCRGraphicsView::OCRGraphicsView(QWidget *parent)
-	: ZoomableGraphicsView(parent),
-	threshold{ 127 }, otsu{ false },
-	currentImage{ Image::Original },
-	selectedText{ nullptr }
+	: ZoomableImageView(parent), selectedText{ nullptr }
 {
-	setDragMode(ScrollHandDrag);
-
-	//Create scene
-	setScene(new QGraphicsScene());
-	scene()->setItemIndexMethod(QGraphicsScene::NoIndex);
-
-	//Create pixmap items
-	originalImageItem = scene()->addPixmap(QPixmap());
-	grayImageItem = scene()->addPixmap(QPixmap());
-	thresholdImageItem = scene()->addPixmap(QPixmap());
-	grayImageItem->hide();
-	thresholdImageItem->hide();
 }
 
 OCRGraphicsView::~OCRGraphicsView() {}
 
-//Sets image of graphics view at given index
-void OCRGraphicsView::setImage(const cv::Mat &t_image)
+//Sets the data to display
+void OCRGraphicsView::setData(const std::vector<FontMetric> &t_data)
 {
-	//Original image
-	originalImage = t_image;
-	imageAndMask = ASM::cvMatToQImage(t_image);
-
-	updateImages();
-}
-
-//Sets threshold for thresholding image
-void OCRGraphicsView::setThreshold(const int t_threshold, const bool t_otsu, const bool force)
-{
-	//Only threshold image if gray image not empty and:
-	//Force is true, or
-	//Otsu is different, or
-	//Otsu is false and threshold is different
-	if (!grayImage.empty() && (force || (otsu != t_otsu) || (!t_otsu && t_threshold != threshold)))
+	for (const auto &result : t_data)
 	{
-		//Otsu's binarisation
-		if (t_otsu)
-		{
-			cv::Mat blurredImage;
-			cv::GaussianBlur(grayImage, blurredImage, cv::Size(5, 5), 0);
-			cv::threshold(blurredImage, thresholdImage, 0, 255, cv::THRESH_BINARY + cv::THRESH_OTSU);
-		}
-		//Binary threshold
-		else
-			cv::threshold(grayImage, thresholdImage, t_threshold, 255, cv::THRESH_BINARY);
-
-		//Set new threshold image
-		thresholdImageItem->setPixmap(ASM::cvMatToQPixmap(thresholdImage));
-
-		//Clear old OCR data
-		clearTesseract();
-	}
-
-	threshold = t_threshold;
-	otsu = t_otsu;
-}
-
-//Shows image of type
-void OCRGraphicsView::showImage(const Image t_type)
-{
-	if (t_type != currentImage)
-	{
-		getFontMetricItem(currentImage)->hide();
-		getFontMetricItem(t_type)->show();
-		currentImage = t_type;
-	}
-}
-
-//Allows user to edit the mask of the current image
-void OCRGraphicsView::editMask()
-{
-	if (!imageAndMask.isNull())
-	{
-		if (currentImage == Image::Original)
-		{
-			MaskPainterDialog maskPainterDialog(imageAndMask, this);
-			//Replace the mask
-			if (maskPainterDialog.exec() == QDialog::Accepted)
-			{
-				imageAndMask = maskPainterDialog.getImage();
-
-				originalImage = ASM::QImageToCvMat(imageAndMask);
-				updateImages();
-			}
-		}
-		else
-		{
-			//Get current image and add current mask to it
-			QImage currentImageAndMask = getFontMetricItem(currentImage)->pixmap().toImage();
-			currentImageAndMask.setAlphaChannel(
-				imageAndMask.convertToFormat(QImage::Format_Alpha8));
-
-			MaskPainterDialog maskPainterDialog(currentImageAndMask, this);
-			if (maskPainterDialog.exec() == QDialog::Accepted)
-			{
-				//Combine current mask with new
-				ImageUtility::mergeAlpha(imageAndMask, maskPainterDialog.getImage());
-
-				originalImage = ASM::QImageToCvMat(imageAndMask);
-				updateImages();
-			}
-		}
-	}
-}
-
-//OCRs threshold image
-void OCRGraphicsView::OCR()
-{
-	if (!thresholdImage.empty())
-	{
-		clearFontMetricItems();
-
-		tessOCR.setImage(thresholdImage);
-		tessOCR.OCR();
-
-		std::map<double, size_t> medianCapitalFrequency;
-		std::map<int, int> fontSizeFrequency;
-		for (const auto &result : tessOCR)
-		{
-			//if (result.getCapHeight() <= result.getXHeight())
-			{
-				//Add font metric item to scene
-				fontMetricItems.push_back(new GraphicsFontMetricItem(result));
-				scene()->addItem(fontMetricItems.back());
-				//Add OCR text to item data, also add ascender and descender of font metrics
-				fontMetricItems.back()->setData(0, QVariant("Median = " + QString::number(result.getXHeight()) + "\n"
-					+ "Capital = " + QString::number(result.getCapHeight()) + "\n"
-					+ "Ascender = " + QString::number(result.getAscent()) + "\n"
-					+ "Descender = " + QString::number(result.getDescent()) + "\n"
-					+ QString::fromStdString(result.getText())));
-			}
-
-			int fontSize = result.getCapHeight();
-			if (fontSizeFrequency.count(fontSize) == 0)
-				fontSizeFrequency[fontSize] = 1;
-			else
-				++fontSizeFrequency.at(fontSize);
-
-			if (result.getXHeight() != 0 && result.getCapHeight() != 0)
-			{
-				double medianCapital = static_cast<double>(result.getXHeight()) / static_cast<double>(result.getCapHeight());
-				if (medianCapitalFrequency.count(medianCapital) == 0)
-					medianCapitalFrequency[medianCapital] = 1;
-				else
-					++medianCapitalFrequency.at(medianCapital);
-			}
-		}
-
-		QString fontSizeFreqStr = "";
-		for (const auto &it : medianCapitalFrequency)
-			fontSizeFreqStr += QString::number(it.first) + " = " + QString::number(it.second) + "\n";
-		emit textBoundClicked(fontSizeFreqStr);
+		//Add font metric item to scene
+		fontMetricItems.push_back(new GraphicsFontMetricItem(result));
+		scene()->addItem(fontMetricItems.back());
+		//Add OCR text to item data, also add ascender and descender of font metrics
+		fontMetricItems.back()->setData(0, QVariant(QString::fromStdString(result.getText())));
 	}
 }
 
@@ -197,48 +56,6 @@ void OCRGraphicsView::mouseReleaseEvent(QMouseEvent *event)
 		}
 	}
 	QGraphicsView::mouseReleaseEvent(event);
-}
-
-//Creates and displays images
-void OCRGraphicsView::updateImages()
-{
-	originalImageItem->setPixmap(QPixmap::fromImage(imageAndMask));
-
-	//Grayscale image
-	cv::cvtColor(originalImage, grayImage, cv::COLOR_BGR2GRAY);
-	grayImageItem->setPixmap(ASM::cvMatToQPixmap(grayImage));
-
-	//Threshold image
-	setThreshold(threshold, otsu, true);
-
-	//Update scene
-	setSceneRect(imageAndMask.rect());
-	fitInView(sceneRect(), Qt::KeepAspectRatio);
-}
-
-
-//Returns font metric item that matches type
-QGraphicsPixmapItem *OCRGraphicsView::getFontMetricItem(const Image t_type)
-{
-	switch (t_type)
-	{
-	case Image::Original: return originalImageItem;
-	case Image::Gray: return grayImageItem;
-	case Image::Threshold: return thresholdImageItem;
-	default:
-	{
-		std::cerr << __FILE__":" << __LINE__ << " - Image type not recognised\n";
-		QCoreApplication::exit(-1);
-		return nullptr;
-	}
-	}
-}
-
-//Clears tesseract result
-void OCRGraphicsView::clearTesseract()
-{
-	tessOCR.clear();
-	clearFontMetricItems();
 }
 
 //Clears font metric items
