@@ -63,12 +63,12 @@ void MainWindow::OCR()
 	multiscaleOCR.setImage(image);
 	multiscaleOCR.OCR();
 
+	//Change to OCR Correction tab
+	ui->tabWidget->setCurrentIndex(1);
+
 	//Pass results to OCR Correction graphics view
 	ui->graphicsViewOCR->setData(multiscaleOCR.getResults());
 	ui->graphicsViewOCR->setImage(ASM::cvMatToQPixmap(image));
-
-	//Change to OCR Correction tab
-	ui->tabWidget->setCurrentIndex(1);
 }
 
 //Prompts user for image
