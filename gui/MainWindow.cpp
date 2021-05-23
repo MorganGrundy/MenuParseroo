@@ -8,6 +8,7 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QDir>
+#include <QProgressDialog>
 
 #include <iostream>
 
@@ -58,6 +59,12 @@ void MainWindow::OCR()
 		messageBox.exec();
 		return;
 	}
+
+	//Create progress dialog
+	QProgressDialog progressDialog("OCR Progress", QString(), 0, 1, this);
+	connect(&multiscaleOCR, SIGNAL(started(int)), &progressDialog, SLOT(setMaximum(int)));
+	connect(&multiscaleOCR, SIGNAL(progress(int)), &progressDialog, SLOT(setValue(int)));
+	progressDialog.open();
 
 	//OCR image
 	multiscaleOCR.setImage(image);

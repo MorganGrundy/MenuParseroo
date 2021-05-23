@@ -129,9 +129,6 @@
     <ClInclude Include="logic\ImageUtility.h">
       <Filter>Header Files\logic</Filter>
     </ClInclude>
-    <ClInclude Include="logic\MultiscaleOCR.h">
-      <Filter>Header Files\logic</Filter>
-    </ClInclude>
     <ClInclude Include="logic\PreprocessStep.h">
       <Filter>Header Files\logic</Filter>
     </ClInclude>
@@ -214,6 +211,9 @@
     </QtMoc>
     <QtMoc Include="gui\MaskPreprocessStepWidget.h">
       <Filter>Header Files\gui</Filter>
+    </QtMoc>
+    <QtMoc Include="logic\MultiscaleOCR.h">
+      <Filter>Header Files\logic</Filter>
     </QtMoc>
   </ItemGroup>
   <ItemGroup>

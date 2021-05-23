@@ -238,7 +238,7 @@
     <QtMoc Include="gui\MaskPainterDialog.h">
     </QtMoc>
     <ClInclude Include="gui\MaskPainterGraphicsView.h" />
-    <ClInclude Include="logic\MultiscaleOCR.h" />
+    <QtMoc Include="logic\MultiscaleOCR.h" />
     <QtMoc Include="gui\OCRGraphicsView.h">
     </QtMoc>
     <QtMoc Include="gui\ZoomableGraphicsView.h">

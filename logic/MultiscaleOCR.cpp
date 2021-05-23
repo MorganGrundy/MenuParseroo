@@ -62,6 +62,9 @@ void MultiscaleOCR::OCR()
 	const size_t componentCount = cv::connectedComponentsWithStats(blurredIm, components,
 		stats, centroids, 8, CV_16U);
 
+	//Emit start signal
+	emit started(componentCount - 1);
+
 	//For each text group perform OCR
 	for (int component = 1; component < componentCount; ++component)
 	{
@@ -146,6 +149,9 @@ void MultiscaleOCR::OCR()
 				}
 			} while ((tess_ri->Next(tesseract::RIL_TEXTLINE)));
 		}
+
+		//Emit progress
+		emit progress(component);
 	}
 }
 
