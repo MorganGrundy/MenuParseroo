@@ -1,9 +1,9 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
+#include "MultiscaleOCR.h"
 
 #include <QMainWindow>
 #include <QGraphicsScene>
-#include <QAbstractButton>
 
 #include <opencv2/core.hpp>
 
@@ -26,16 +26,13 @@ public slots:
 	//Prompts user for image
 	void loadImage();
 
-	//Sets threshold for thresholding image
-	void setThreshold(const int threshold);
-
-	//Displayed image choice changed
-	void imageChoiceChanged(QAbstractButton *button);
-
-	//Modifies text from OCR
-	void textChanged();
+	//Performs OCR
+	void OCR();
 
 private:
 	Ui::MainWindow *ui;
+	QMenu *menu;
+
+	MultiscaleOCR multiscaleOCR;
 };
 #endif // MAINWINDOW_H

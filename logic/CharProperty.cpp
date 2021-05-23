@@ -1,4 +1,4 @@
-#include "charproperty.h"
+#include "CharProperty.h"
 
 const std::string CharProperty::ASCENDER_LIST = "!\"$&'()*/?[\\]`{|}";
 const std::string CharProperty::CAPITAL_LIST = "#%0123456789@ABCDEFGHIJKLMNOPQRSTUVWXYZ^bdfhijklt\x9C";

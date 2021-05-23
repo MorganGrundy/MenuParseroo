@@ -1,7 +1,7 @@
 #ifndef GRAPHICSFONTMETRICITEM_H
 #define GRAPHICSFONTMETRICITEM_H
 
-#include "fontmetric.h"
+#include "FontMetric.h"
 
 #include <QGraphicsItem>
 #include <QPainter>

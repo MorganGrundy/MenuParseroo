@@ -1,7 +1,7 @@
 #ifndef FONTMETRIC_H
 #define FONTMETRIC_H
 
-#include "charproperty.h"
+#include "CharProperty.h"
 
 #include <string>
 #include <vector>

@@ -1,4 +1,4 @@
-#include "fontmetric.h"
+#include "FontMetric.h"
 
 #include <iostream>
 #include <cctype>
@@ -13,7 +13,7 @@ FontMetric::FontMetric(const cv::Mat &t_image, const cv::Rect t_bounds, const st
 	descent{ 0 }
 {
 	//Text must contain alphanumerics
-	if (!std::any_of(text.cbegin(), text.cend(), [](const char c) {return std::isalnum(c); }))
+	if (!std::any_of(text.cbegin(), text.cend(), [](const unsigned char c) {return std::isalnum(c); }))
 		throw std::invalid_argument("FontMetric text must contain at least one alphanumeric");
 
 	//Get text properties

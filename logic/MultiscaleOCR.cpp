@@ -1,10 +1,10 @@
-#include "multiscaleocr.h"
+#include "MultiscaleOCR.h"
 
 #include <iostream>
 
 #include <QDir>
-
 #include <QCoreApplication>
+
 #include <tesseract/genericvector.h>
 
 #include <opencv2/imgproc.hpp>
@@ -61,6 +61,9 @@ void MultiscaleOCR::OCR()
 	cv::Mat components, stats, centroids;
 	const size_t componentCount = cv::connectedComponentsWithStats(blurredIm, components,
 		stats, centroids, 8, CV_16U);
+
+	//Emit start signal
+	emit started(componentCount - 1);
 
 	//For each text group perform OCR
 	for (int component = 1; component < componentCount; ++component)
@@ -146,6 +149,9 @@ void MultiscaleOCR::OCR()
 				}
 			} while ((tess_ri->Next(tesseract::RIL_TEXTLINE)));
 		}
+
+		//Emit progress
+		emit progress(component);
 	}
 }
 
@@ -153,6 +159,12 @@ void MultiscaleOCR::OCR()
 void MultiscaleOCR::clear()
 {
 	results.clear();
+}
+
+//Returns results
+const std::vector<FontMetric> &MultiscaleOCR::getResults() const
+{
+	return results;
 }
 
 //Const iterator for beginning of OCR results

@@ -1,7 +1,7 @@
 #ifndef MULTISCALEOCR_H
 #define MULTISCALEOCR_H
 
-#include "fontmetric.h"
+#include "FontMetric.h"
 
 #include <vector>
 
@@ -10,8 +10,11 @@
 
 #include <opencv2/core.hpp>
 
-class MultiscaleOCR
+#include <QObject>
+
+class MultiscaleOCR : public QObject
 {
+	Q_OBJECT
 public:
 	MultiscaleOCR();
 	~MultiscaleOCR();
@@ -24,11 +27,17 @@ public:
 
 	//Clears results
 	void clear();
+	//Returns results
+	const std::vector<FontMetric> &getResults() const;
 
 	//Const iterator for beginning of OCR results
 	std::vector<FontMetric>::const_iterator begin() const;
 	//Const iterator for end of OCR results
 	std::vector<FontMetric>::const_iterator end() const;
+
+signals:
+	void started(int t_step);
+	void progress(int t_progress);
 
 private:
 	//The image to OCR
