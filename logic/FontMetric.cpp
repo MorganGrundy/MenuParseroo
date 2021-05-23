@@ -12,11 +12,8 @@ FontMetric::FontMetric(const cv::Mat &t_image, const cv::Rect t_bounds, const st
 	: bounds{ t_bounds }, text{ t_text }, ascent{ 0 }, capHeight{ 0 }, xHeight{ 0 }, baseline{ t_baseline },
 	descent{ 0 }
 {
-	if (text.empty())
-		throw std::invalid_argument("FontMetric text was empty");
-
 	//Text must contain alphanumerics
-	if (!std::any_of(text.cbegin(), text.cend(), [](const char c) {return std::isalnum(c); }))
+	if (!std::any_of(text.cbegin(), text.cend(), [](const unsigned char c) {return std::isalnum(c); }))
 		throw std::invalid_argument("FontMetric text must contain at least one alphanumeric");
 
 	//Get text properties
