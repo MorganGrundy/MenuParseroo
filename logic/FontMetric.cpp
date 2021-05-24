@@ -9,12 +9,12 @@
 
 FontMetric::FontMetric(const cv::Mat &t_image, const cv::Rect t_bounds, const std::string &t_text,
 	const int t_baseline)
-	: bounds{ t_bounds }, text{ t_text }, ascent{ 0 }, capHeight{ 0 }, xHeight{ 0 }, baseline{ t_baseline },
-	descent{ 0 }
+	: bounds{ t_bounds }, text{ t_text }, valid{ true },
+	ascent{ 0 }, capHeight{ 0 }, xHeight{ 0 }, baseline{ t_baseline }, descent{ 0 }
 {
 	//Text must contain alphanumerics
 	if (!std::any_of(text.cbegin(), text.cend(), [](const unsigned char c) {return std::isalnum(c); }))
-		throw std::invalid_argument("FontMetric text must contain at least one alphanumeric");
+		createInvalid();
 
 	//Get text properties
 	//Ascending characters are too unreliable and just interfere so treat as capital
@@ -24,14 +24,14 @@ FontMetric::FontMetric(const cv::Mat &t_image, const cv::Rect t_bounds, const st
 	size_t descendingCount = 0;
 	for (auto character : text)
 	{
-		properties.push_back(CharProperty(character));
-		switch (properties.back().topPosition)
+		CharProperty property(character);
+		switch (property.topPosition)
 		{
 		case CharProperty::Top::Ascender: ++ascendingCount; break;
 		case CharProperty::Top::Capital: ++capitalCount; break;
 		case CharProperty::Top::Median: ++medianCount; break;
 		}
-		if (properties.back().bottomPosition == CharProperty::Bottom::Descender)
+		if (property.bottomPosition == CharProperty::Bottom::Descender)
 			++descendingCount;
 	}
 
@@ -135,31 +135,14 @@ FontMetric::FontMetric(const cv::Mat &t_image, const cv::Rect t_bounds, const st
 		descent = bounds.height - baseline;
 	}
 
-	//Create estimate of Descent from Cap height
-	if (descent == 0 && capHeight != 0)
-		descent = std::round(capHeight * DESCENDER_CAPITAL_RATIO);
-	//Create estimate of Descent from x-height
-	else if (descent == 0 && xHeight != 0)
-		descent = std::round(xHeight * DESCENDER_MEDIAN_RATIO);
+	calculateEstimates();
+	updateBounds();
+}
 
-	//Create estimate of x-height from Cap height
-	if (xHeight == 0 && capHeight != 0)
-		xHeight = std::round(capHeight * MEDIAN_CAPITAL_RATIO_AVG);
-	//Create estimate of Cap height from x-height
-	else if (capHeight == 0 && xHeight != 0)
-		capHeight = std::round(xHeight * CAPITAL_MEDIAN_RATIO_AVG);
-
-	//Create estimate of Cap height from Ascent
-	if (capHeight == 0 && ascent != 0)
-		capHeight = std::round(ascent * CAPITAL_ASCENDER_RATIO_AVG);
-	//Create estimate of x-height from Ascent
-	if (xHeight == 0 && ascent != 0)
-		xHeight = std::round(ascent * MEDIAN_ASCENDER_RATIO_AVG);
-
-	//Update bounds
-	bounds.y = bounds.y + baseline - std::max(ascent, capHeight);
-	baseline = std::max(ascent, capHeight);
-	bounds.height = baseline + descent;
+//Returns if font metric is valid
+bool FontMetric::isValid()
+{
+	return valid;
 }
 
 //Returns bounds of text
@@ -238,4 +221,51 @@ int FontMetric::calculateRowMass(const cv::Mat &rowMasses, const int targetRow)
 	}
 
 	return mass;
+}
+
+//Calculate estimates of font metrics
+void FontMetric::calculateEstimates()
+{
+	//Create estimate of Descent from Cap height
+	if (descent == 0 && capHeight != 0)
+		descent = std::round(capHeight * DESCENDER_CAPITAL_RATIO);
+	//Create estimate of Descent from x-height
+	else if (descent == 0 && xHeight != 0)
+		descent = std::round(xHeight * DESCENDER_MEDIAN_RATIO);
+
+	//Create estimate of x-height from Cap height
+	if (xHeight == 0 && capHeight != 0)
+		xHeight = std::round(capHeight * MEDIAN_CAPITAL_RATIO_AVG);
+	//Create estimate of Cap height from x-height
+	else if (capHeight == 0 && xHeight != 0)
+		capHeight = std::round(xHeight * CAPITAL_MEDIAN_RATIO_AVG);
+
+	//Create estimate of Cap height from Ascent
+	if (capHeight == 0 && ascent != 0)
+		capHeight = std::round(ascent * CAPITAL_ASCENDER_RATIO_AVG);
+	//Create estimate of x-height from Ascent
+	if (xHeight == 0 && ascent != 0)
+		xHeight = std::round(ascent * MEDIAN_ASCENDER_RATIO_AVG);
+}
+
+//Set font metrics for an invalid input
+void FontMetric::createInvalid()
+{
+	//If no baseline then assume baseline at bottom of bounds
+	if (baseline == 0)
+		baseline = bounds.height;
+
+	//Assume top of bounds to be Cap Height
+	ascent = bounds.height;
+
+	calculateEstimates();
+	updateBounds();
+}
+
+//Update bounds based on font metrics
+void FontMetric::updateBounds()
+{
+	bounds.y = bounds.y + baseline - std::max(ascent, capHeight);
+	baseline = std::max(ascent, capHeight);
+	bounds.height = baseline + descent;
 }

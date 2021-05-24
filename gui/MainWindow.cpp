@@ -86,7 +86,7 @@ void MainWindow::loadImage()
 
 	if (!file.isEmpty())
 	{
-		cv::Mat image = cv::imread(file.toStdString(), cv::IMREAD_COLOR);
+		cv::Mat image = cv::imread(file.toStdString(), cv::IMREAD_UNCHANGED);
 		if (image.empty())
 		{
 			//Failed to load image

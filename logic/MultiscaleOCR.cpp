@@ -106,10 +106,13 @@ void MultiscaleOCR::OCR()
 			tess_ri->Begin();
 			do
 			{
-				//Ignore images
+				//Create inactive FontMetric for non-text types
 				if (tess_ri->BlockType() != PolyBlockType::PT_FLOWING_IMAGE &&
 					tess_ri->BlockType() != PolyBlockType::PT_HEADING_IMAGE &&
-					tess_ri->BlockType() != PolyBlockType::PT_PULLOUT_IMAGE)
+					tess_ri->BlockType() != PolyBlockType::PT_PULLOUT_IMAGE &&
+					tess_ri->BlockType() != PolyBlockType::PT_HORZ_LINE &&
+					tess_ri->BlockType() != PolyBlockType::PT_VERT_LINE &&
+					tess_ri->BlockType() != PolyBlockType::PT_NOISE)
 				{
 					//Get text bounding box and baseline
 					int x1, y1, x2, y2;
@@ -132,23 +135,17 @@ void MultiscaleOCR::OCR()
 					base_x2 = left + std::ceil((base_x2 - borderLeft) * inverseScale);
 					base_y2 = top + std::ceil((base_y2 - borderTop) * inverseScale);
 
-					//Calculate font metrics of text and add to results
+					//Calculate font metrics of text
 					char *text = tess_ri->GetUTF8Text(tesseract::RIL_TEXTLINE);
-					try
-					{
-						FontMetric metric(blurredROI, cv::Rect(x1, top, x2 - x1, height),
-							std::string(text), base_y1 - top);
-
-						results.push_back(metric);
-					}
-					catch (const std::exception &e)
-					{
-						std::cerr << e.what() << "\n";
-					}
+					results.emplace_back(blurredROI, cv::Rect(x1, top, x2 - x1, height), std::string(text), base_y1 - top);
 					delete[] text;
 				}
+				else
+					results.emplace_back(blurredROI, cv::Rect(left, top, width, height), "", 0);
 			} while ((tess_ri->Next(tesseract::RIL_TEXTLINE)));
 		}
+		else
+			results.emplace_back(blurredROI, cv::Rect(left, top, width, height), "", 0);
 
 		//Emit progress
 		emit progress(component);
