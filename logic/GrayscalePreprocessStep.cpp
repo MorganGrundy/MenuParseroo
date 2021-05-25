@@ -17,9 +17,6 @@ std::string GrayscalePreprocessStep::getName()
 //Applies the preprocess step to an image
 void GrayscalePreprocessStep::preprocess(const cv::Mat &t_in, cv::Mat &t_out)
 {
-	if (t_in.channels() == 1)
-		cv::cvtColor(t_in, t_out, cv::COLOR_BGR2GRAY);
-
 	switch (t_in.channels())
 	{
 	case 1: t_out = t_in.clone(); break;

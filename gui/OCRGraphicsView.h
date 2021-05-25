@@ -21,7 +21,7 @@ public:
 
 signals:
 	//Shares the text that was clicked
-	void textBoundClicked(const QString t_text);
+	void textClicked(const QString t_text);
 
 protected:
 	//Emits OCR data of clicked text

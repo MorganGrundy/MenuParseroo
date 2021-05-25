@@ -22,6 +22,11 @@ OCRGraphicsView::~OCRGraphicsView() {}
 //Sets the data to display
 void OCRGraphicsView::setData(const std::vector<FontMetric> &t_data)
 {
+	//Delete old font metric items
+	for (auto item : fontMetricItems)
+		delete item;
+	fontMetricItems.clear();
+
 	for (const auto &result : t_data)
 	{
 		//Add font metric item to scene
@@ -52,7 +57,7 @@ void OCRGraphicsView::mouseReleaseEvent(QMouseEvent *event)
 			effect->setStrength(1);
 			selectedText->setGraphicsEffect(effect);
 
-			emit textBoundClicked(clickedItem->data(0).toString());
+			emit textClicked(clickedItem->data(0).toString());
 		}
 	}
 	QGraphicsView::mouseReleaseEvent(event);
