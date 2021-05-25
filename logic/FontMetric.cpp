@@ -140,9 +140,15 @@ FontMetric::FontMetric(const cv::Mat &t_image, const cv::Rect t_bounds, const st
 }
 
 //Returns if font metric is valid
-bool FontMetric::isValid()
+bool FontMetric::isValid() const
 {
 	return valid;
+}
+
+//Sets if font metric is valid
+void FontMetric::setValid(const bool t_valid)
+{
+	valid = t_valid;
 }
 
 //Returns bounds of text
@@ -155,6 +161,12 @@ const cv::Rect &FontMetric::getBounds() const
 std::string FontMetric::getText() const
 {
 	return text;
+}
+
+//Sets text
+void FontMetric::setText(const std::string &t_text)
+{
+	text = t_text;
 }
 
 //Returns ascent

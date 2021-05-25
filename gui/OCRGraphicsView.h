@@ -19,9 +19,15 @@ public:
 	//Sets the data to display
 	void setData(const std::vector<FontMetric> &t_data);
 
+public slots:
+	//Modifies the selected text
+	void modifySelectedText(const bool t_valid);
+	//Modifies the selected text
+	void modifySelectedText(const std::string &t_text);
+
 signals:
 	//Shares the text that was clicked
-	void textClicked(const QString t_text);
+	void textClicked(const bool t_valid, const std::string &t_text);
 
 protected:
 	//Emits OCR data of clicked text
@@ -30,7 +36,7 @@ protected:
 private:
 	//Font metric items for text (also has text in data 0)
 	std::vector<GraphicsFontMetricItem *> fontMetricItems;
-	QGraphicsItem *selectedText;
+	GraphicsFontMetricItem *selectedText;
 
 	//-----------------------------------------------------
 	//Clears font metric items

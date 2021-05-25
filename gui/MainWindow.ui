@@ -27,7 +27,7 @@
        <enum>QTabWidget::Rounded</enum>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="tabPreprocess">
        <attribute name="title">
@@ -204,12 +204,12 @@
              <number>0</number>
             </property>
             <item>
-             <widget class="QCheckBox" name="checkActive">
+             <widget class="QCheckBox" name="checkValid">
               <property name="layoutDirection">
                <enum>Qt::RightToLeft</enum>
               </property>
               <property name="text">
-               <string>Active?</string>
+               <string>Valid?</string>
               </property>
              </widget>
             </item>

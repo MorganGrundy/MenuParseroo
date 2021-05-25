@@ -32,8 +32,24 @@ void OCRGraphicsView::setData(const std::vector<FontMetric> &t_data)
 		//Add font metric item to scene
 		fontMetricItems.push_back(new GraphicsFontMetricItem(result));
 		scene()->addItem(fontMetricItems.back());
-		//Add OCR text to item data, also add ascender and descender of font metrics
-		fontMetricItems.back()->setData(0, QVariant(QString::fromStdString(result.getText())));
+	}
+}
+
+//Modifies the selected text
+void OCRGraphicsView::modifySelectedText(const bool t_valid)
+{
+	if (selectedText != nullptr)
+	{
+		selectedText->setValid(t_valid);
+	}
+}
+
+//Modifies the selected text
+void OCRGraphicsView::modifySelectedText(const std::string &t_text)
+{
+	if (selectedText != nullptr)
+	{
+		selectedText->setText(t_text);
 	}
 }
 
@@ -42,22 +58,21 @@ void OCRGraphicsView::mouseReleaseEvent(QMouseEvent *event)
 {
 	if (event->button() == Qt::MouseButton::LeftButton)
 	{
-		//Font metric items have text stored in data so can filter by that
-		auto clickedItem = itemAt(event->pos());
-		if (clickedItem != nullptr && !clickedItem->data(0).isNull())
+		auto clickedItem = dynamic_cast<GraphicsFontMetricItem *>(itemAt(event->pos()));
+		if (clickedItem != nullptr)
 		{
 			//Deselect previous item
 			if (selectedText != nullptr)
 				selectedText->setGraphicsEffect(nullptr);
 
-			//Change color of item to red
+			//Change color of item to green
 			selectedText = clickedItem;
 			QGraphicsColorizeEffect *effect = new QGraphicsColorizeEffect();
-			effect->setColor(QColor(255, 0, 0));
+			effect->setColor(QColor(0, 255, 0));
 			effect->setStrength(1);
 			selectedText->setGraphicsEffect(effect);
 
-			emit textClicked(clickedItem->data(0).toString());
+			emit textClicked(clickedItem->getFontMetric().isValid(), clickedItem->getFontMetric().getText());
 		}
 	}
 	QGraphicsView::mouseReleaseEvent(event);

@@ -19,6 +19,8 @@ MainWindow::MainWindow(QWidget *parent)
 	: QMainWindow(parent), ui(new Ui::MainWindow)
 {
 	ui->setupUi(this);
+	
+	////////////////////////// Image Preprocessing //////////////////////////
 
 	//Update graphics view when preprocessed image changes
 	connect(ui->preprocessStepList, &PreprocessStepListWidget::imageUpdated,
@@ -33,6 +35,20 @@ MainWindow::MainWindow(QWidget *parent)
 
 	//Select preprocessing tab
 	ui->tabWidget->setCurrentIndex(0);
+
+	////////////////////////// OCR Correction //////////////////////////
+	
+	//Display active state and text of text clicked
+	connect(ui->graphicsViewOCR, &OCRGraphicsView::textClicked,
+		this, [=](const bool t_valid, const std::string &t_text) {
+			ui->checkValid->setCheckState(t_valid ? Qt::Checked : Qt::Unchecked);
+			ui->textEdit->setText(QString::fromStdString(t_text));
+		});
+
+	//Update active state of selected text
+	connect(ui->checkValid, &QCheckBox::stateChanged, ui->graphicsViewOCR, qOverload<bool>(&OCRGraphicsView::modifySelectedText));
+	//Update selected text
+	connect(ui->textEdit, &QTextEdit::textChanged, this, [=]() { ui->graphicsViewOCR->modifySelectedText(ui->textEdit->toPlainText().toStdString()); });
 }
 
 MainWindow::~MainWindow()

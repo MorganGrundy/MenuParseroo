@@ -15,13 +15,17 @@ public:
 		const int t_baseline);
 
 	//Returns if font metric is valid
-	bool isValid();
+	bool isValid() const;
+	//Sets if font metric is valid
+	void setValid(const bool t_valid);
 
 	//Returns bounds of text
 	const cv::Rect &getBounds() const;
 
 	//Returns text
 	std::string getText() const;
+	//Sets text
+	void setText(const std::string &t_text);
 
 	//Returns ascent
 	int getAscent() const;
