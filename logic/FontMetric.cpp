@@ -263,6 +263,8 @@ void FontMetric::calculateEstimates()
 //Set font metrics for an invalid input
 void FontMetric::createInvalid()
 {
+	valid = false;
+
 	//If no baseline then assume baseline at bottom of bounds
 	if (baseline == 0)
 		baseline = bounds.height;

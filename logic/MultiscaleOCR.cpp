@@ -107,7 +107,8 @@ void MultiscaleOCR::OCR()
 			do
 			{
 				//Create inactive FontMetric for non-text types
-				if (tess_ri->BlockType() != PolyBlockType::PT_FLOWING_IMAGE &&
+				if (tess_ri->BlockType() != PolyBlockType::PT_UNKNOWN &&
+					tess_ri->BlockType() != PolyBlockType::PT_FLOWING_IMAGE &&
 					tess_ri->BlockType() != PolyBlockType::PT_HEADING_IMAGE &&
 					tess_ri->BlockType() != PolyBlockType::PT_PULLOUT_IMAGE &&
 					tess_ri->BlockType() != PolyBlockType::PT_HORZ_LINE &&
