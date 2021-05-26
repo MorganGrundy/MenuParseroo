@@ -25,6 +25,8 @@ public:
 public slots:
 	//Prompts user for image
 	void loadImage();
+	//Prompts user to save image to file
+	void saveImage();
 
 	//Performs OCR
 	void OCR();

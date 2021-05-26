@@ -117,3 +117,26 @@ void MainWindow::loadImage()
 		}
 	}
 }
+
+//Prompts user to save image to file
+void MainWindow::saveImage()
+{
+	const cv::Mat image = ui->preprocessStepList->getResult();
+	if (!image.empty())
+	{
+		const QString file = QFileDialog::getSaveFileName(this, tr("Save image"), QDir::currentPath(),
+			tr("Images (*.png *.jpg *.jpeg)"));
+
+		if (!file.isEmpty())
+		{
+			const bool success = cv::imwrite(file.toStdString(), ui->preprocessStepList->getResult());
+			if (!success)
+			{
+				//Failed to save image
+				QMessageBox messageBox(this);
+				messageBox.setText(tr("Failed to save image at: ") + file);
+				messageBox.exec();
+			}
+		}
+	}
+}
