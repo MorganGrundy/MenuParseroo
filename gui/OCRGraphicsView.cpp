@@ -58,15 +58,28 @@ void OCRGraphicsView::mouseReleaseEvent(QMouseEvent *event)
 {
 	if (event->button() == Qt::MouseButton::LeftButton)
 	{
-		auto clickedItem = dynamic_cast<GraphicsFontMetricItem *>(itemAt(event->pos()));
-		if (clickedItem != nullptr)
+		//Get all items at click
+		auto clickedItems = items(event->pos());
+		//Remove any non font metric items
+		clickedItems.erase(std::remove_if(clickedItems.begin(), clickedItems.end(), [](QGraphicsItem *item) -> bool {
+			return dynamic_cast<GraphicsFontMetricItem *>(item) == nullptr;
+		}), clickedItems.end());
+
+		if (!clickedItems.isEmpty())
 		{
+			//If one of the items is already selected then select the next one
+			const int currentIndex = clickedItems.indexOf(selectedText);
+			const int nextIndex = (currentIndex + 1) % clickedItems.size();
+
+			//Get clicked item
+			GraphicsFontMetricItem *clickedItem = dynamic_cast<GraphicsFontMetricItem *>(clickedItems.at(nextIndex));
+
 			//Deselect previous item
 			if (selectedText != nullptr)
 				selectedText->setGraphicsEffect(nullptr);
+			selectedText = clickedItem;
 
 			//Change color of item to green
-			selectedText = clickedItem;
 			QGraphicsColorizeEffect *effect = new QGraphicsColorizeEffect();
 			effect->setColor(QColor(0, 255, 0));
 			effect->setStrength(1);
